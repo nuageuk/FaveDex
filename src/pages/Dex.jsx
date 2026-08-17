@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 
 function capitalize(name) {
   if (typeof name !== 'string' || name.length === 0) return ''
@@ -307,6 +308,9 @@ export default function Dex() {
           <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{capitalize(vote.pokemonName)}</div>
           <div style={{ fontSize: '13px', color: '#888' }}>Generation {vote.generation}</div>
           <div style={{ fontSize: '13px', color: '#888' }}>Thanks for voting!</div>
+          <Link to="/results" style={{ marginTop: '8px', fontSize: '13px', color: '#fff' }}>
+            View results
+          </Link>
         </div>
       </div>
     )
