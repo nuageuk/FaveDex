@@ -63,3 +63,7 @@ p {
 .enter-btn:hover {
   background: #ddd;
 }
+
+* {
+  caret-color: transparent;
+}
