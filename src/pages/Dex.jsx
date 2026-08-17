@@ -63,6 +63,7 @@ export default function Dex() {
 
   return (
     <div
+      className="dex-page"
       style={{
         background: '#0f0f0f',
         color: '#f0f0f0',
@@ -162,7 +163,7 @@ export default function Dex() {
         <div
           style={{
             marginTop: '24px',
-            width: '280px',
+            width: '400px',
             background: '#1a1a1a',
             border: '1px solid #333',
             borderRadius: '4px',
@@ -182,8 +183,8 @@ export default function Dex() {
             onError={() => setSpriteError(true)}
             alt={selected.name}
             style={{
-              width: '96px',
-              height: '96px',
+              width: '300px',
+              height: '300px',
               imageRendering: 'pixelated',
             }}
           />
