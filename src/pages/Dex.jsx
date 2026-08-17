@@ -8,6 +8,14 @@ function formatDexNumber(n) {
   return `#${String(n).padStart(3, '0')}`
 }
 
+const VOTE_KEY = 'favedex_vote'
+
+function spriteUrl(id, useFallback) {
+  return useFallback
+    ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`
+    : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${id}.gif`
+}
+
 export default function Dex() {
   const [pokemon, setPokemon] = useState([])
   const [loading, setLoading] = useState(true)
@@ -16,6 +24,15 @@ export default function Dex() {
   const [isOpen, setIsOpen] = useState(false)
   const [selected, setSelected] = useState(null)
   const [spriteError, setSpriteError] = useState(false)
+  const [vote, setVote] = useState(() => {
+    try {
+      const raw = localStorage.getItem(VOTE_KEY)
+      return raw ? JSON.parse(raw) : null
+    } catch {
+      return null
+    }
+  })
+  const [confirmSpriteError, setConfirmSpriteError] = useState(false)
 
   const containerRef = useRef(null)
 
@@ -44,6 +61,55 @@ export default function Dex() {
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
+  function handleConfirm() {
+    if (!selected) return
+    const newVote = { id: selected.dexNumber, name: selected.name }
+    localStorage.setItem(VOTE_KEY, JSON.stringify(newVote))
+    setVote(newVote)
+  }
+
+  if (vote) {
+    return (
+      <div
+        className="dex-page"
+        style={{
+          background: '#0f0f0f',
+          color: '#f0f0f0',
+          minHeight: '100vh',
+          padding: '24px',
+          fontFamily: 'system-ui, sans-serif',
+        }}
+      >
+        <div
+          style={{
+            width: '400px',
+            background: '#1a1a1a',
+            border: '1px solid #333',
+            borderRadius: '4px',
+            padding: '16px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+        >
+          <img
+            src={spriteUrl(vote.id, vote.id > 649 || confirmSpriteError)}
+            onError={() => setConfirmSpriteError(true)}
+            alt={vote.name}
+            style={{
+              width: '300px',
+              height: '300px',
+              imageRendering: 'pixelated',
+            }}
+          />
+          <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{capitalize(vote.name)}</div>
+          <div style={{ fontSize: '13px', color: '#888' }}>Thanks for voting!</div>
+        </div>
+      </div>
+    )
+  }
 
   if (loading) return <div style={{ color: '#f0f0f0' }}>Loading...</div>
   if (error) return <div style={{ color: '#f0f0f0' }}>Error: {error}</div>
@@ -191,17 +257,18 @@ export default function Dex() {
           <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{capitalize(selected.name)}</div>
           <div style={{ fontSize: '13px', color: '#888' }}>{formatDexNumber(selected.dexNumber)}</div>
           <button
-            disabled
+            onClick={handleConfirm}
             style={{
               marginTop: '8px',
               width: '100%',
               padding: '10px 12px',
-              background: '#2a2a2a',
-              color: '#666',
+              background: '#fff',
+              color: '#0f0f0f',
               border: '1px solid #333',
               borderRadius: '4px',
               fontSize: '14px',
-              cursor: 'not-allowed',
+              fontWeight: 600,
+              cursor: 'pointer',
             }}
           >
             Confirm my pick
