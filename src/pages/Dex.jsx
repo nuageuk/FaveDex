@@ -70,6 +70,7 @@ export default function Dex() {
     }
   })
   const [confirmSpriteError, setConfirmSpriteError] = useState(false)
+  const [showLocationPrompt, setShowLocationPrompt] = useState(false)
 
   const containerRef = useRef(null)
   const imgRef = useRef(null)
@@ -259,16 +260,45 @@ export default function Dex() {
     }
   }, [selected])
 
-  function handleConfirm() {
+  function finalizeVote(location) {
     if (!selected) return
     const newVote = {
       pokemonId: selected.dexNumber,
       pokemonName: selected.name,
       generation: getGeneration(selected.dexNumber),
       timestamp: Date.now(),
+      location,
     }
     localStorage.setItem(VOTE_KEY, JSON.stringify(newVote))
     setVote(newVote)
+    setShowLocationPrompt(false)
+  }
+
+  function handleConfirm() {
+    if (!selected) return
+    setShowLocationPrompt(true)
+  }
+
+  function handleAllowLocation() {
+    if (!navigator.geolocation) {
+      finalizeVote(null)
+      return
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        finalizeVote({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        })
+      },
+      () => {
+        finalizeVote(null)
+      }
+    )
+  }
+
+  function handleSkipLocation() {
+    finalizeVote(null)
   }
 
   if (vote) {
@@ -479,23 +509,72 @@ export default function Dex() {
           </div>
           <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{capitalize(selected.name)}</div>
           <div style={{ fontSize: '13px', color: '#888' }}>{formatDexNumber(selected.dexNumber)}</div>
-          <button
-            onClick={handleConfirm}
-            style={{
-              marginTop: '8px',
-              width: '100%',
-              padding: '10px 12px',
-              background: '#fff',
-              color: '#0f0f0f',
-              border: '1px solid #333',
-              borderRadius: '4px',
-              fontSize: '14px',
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
-          >
-            Confirm my pick
-          </button>
+          {showLocationPrompt ? (
+            <div
+              style={{
+                marginTop: '8px',
+                width: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '8px',
+              }}
+            >
+              <div style={{ fontSize: '13px', color: '#888', textAlign: 'center' }}>
+                We&apos;d like to know your location to plot your vote on the map
+              </div>
+              <button
+                onClick={handleAllowLocation}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  background: '#fff',
+                  color: '#0f0f0f',
+                  border: '1px solid #333',
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Allow location
+              </button>
+              <button
+                onClick={handleSkipLocation}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  background: '#1a1a1a',
+                  color: '#f0f0f0',
+                  border: '1px solid #333',
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Skip
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handleConfirm}
+              style={{
+                marginTop: '8px',
+                width: '100%',
+                padding: '10px 12px',
+                background: '#fff',
+                color: '#0f0f0f',
+                border: '1px solid #333',
+                borderRadius: '4px',
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              Confirm my pick
+            </button>
+          )}
         </div>
       )}
     </div>
