@@ -17,6 +17,25 @@ function spriteUrl(id, useFallback) {
     : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${id}.gif`
 }
 
+const CANVAS_SIZE = 300
+const MIN_BLOCK_SIZE = 4
+const PIXELATE_PHASE_MS = 150
+const CROSSFADE_MS = 80
+
+function drawPixelated(ctx, tempCanvas, img, blockSize) {
+  const size = Math.max(1, Math.round(blockSize))
+  tempCanvas.width = size
+  tempCanvas.height = size
+  const tempCtx = tempCanvas.getContext('2d')
+  tempCtx.imageSmoothingEnabled = false
+  tempCtx.clearRect(0, 0, size, size)
+  tempCtx.drawImage(img, 0, 0, size, size)
+
+  ctx.imageSmoothingEnabled = false
+  ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
+  ctx.drawImage(tempCanvas, 0, 0, size, size, 0, 0, CANVAS_SIZE, CANVAS_SIZE)
+}
+
 const GENERATION_RANGES = [
   [1, 151],
   [152, 251],
@@ -41,7 +60,6 @@ export default function Dex() {
   const [query, setQuery] = useState('')
   const [isOpen, setIsOpen] = useState(false)
   const [selected, setSelected] = useState(null)
-  const [spriteError, setSpriteError] = useState(false)
   const [vote, setVote] = useState(() => {
     try {
       const raw = localStorage.getItem(VOTE_KEY)
@@ -53,6 +71,14 @@ export default function Dex() {
   const [confirmSpriteError, setConfirmSpriteError] = useState(false)
 
   const containerRef = useRef(null)
+  const imgRef = useRef(null)
+  const canvasRef = useRef(null)
+  const tempCanvasRef = useRef(null)
+  const snapshotCanvasRef = useRef(null)
+  const oldPeakCanvasRef = useRef(null)
+  const newPeakCanvasRef = useRef(null)
+  const animationFrameRef = useRef(null)
+  const prevDexNumberRef = useRef(null)
 
   useEffect(() => {
     fetch('https://pokeapi.co/api/v2/pokemon?limit=1025')
@@ -80,6 +106,158 @@ export default function Dex() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  useEffect(() => {
+    if (!selected) return
+
+    const img = imgRef.current
+    const canvas = canvasRef.current
+    if (!img || !canvas) return
+    const ctx = canvas.getContext('2d')
+
+    if (!tempCanvasRef.current) {
+      tempCanvasRef.current = document.createElement('canvas')
+    }
+    const tempCanvas = tempCanvasRef.current
+
+    if (!snapshotCanvasRef.current) {
+      const snapshot = document.createElement('canvas')
+      snapshot.width = CANVAS_SIZE
+      snapshot.height = CANVAS_SIZE
+      snapshotCanvasRef.current = snapshot
+    }
+    const snapshotCanvas = snapshotCanvasRef.current
+
+    if (!oldPeakCanvasRef.current) {
+      const c = document.createElement('canvas')
+      c.width = CANVAS_SIZE
+      c.height = CANVAS_SIZE
+      oldPeakCanvasRef.current = c
+    }
+    const oldPeakCanvas = oldPeakCanvasRef.current
+
+    if (!newPeakCanvasRef.current) {
+      const c = document.createElement('canvas')
+      c.width = CANVAS_SIZE
+      c.height = CANVAS_SIZE
+      newPeakCanvasRef.current = c
+    }
+    const newPeakCanvas = newPeakCanvasRef.current
+
+    if (prevDexNumberRef.current === selected.dexNumber) return
+    const isFirstSelection = prevDexNumberRef.current === null
+    prevDexNumberRef.current = selected.dexNumber
+
+    const nextUrl = spriteUrl(selected.dexNumber, selected.dexNumber > 649)
+
+    if (isFirstSelection) {
+      ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
+      img.src = nextUrl
+      return
+    }
+
+    let cancelled = false
+
+    function waitForLoad() {
+      return new Promise((resolve) => {
+        function handleLoad() {
+          img.removeEventListener('load', handleLoad)
+          resolve()
+        }
+        img.addEventListener('load', handleLoad, { once: true })
+      })
+    }
+
+    function runPhase(source, from, to) {
+      return new Promise((resolve) => {
+        const start = performance.now()
+        function step(now) {
+          if (cancelled) {
+            resolve()
+            return
+          }
+          const t = Math.min(1, (now - start) / PIXELATE_PHASE_MS)
+          const size = from + (to - from) * t
+          drawPixelated(ctx, tempCanvas, source, size)
+          if (t < 1) {
+            animationFrameRef.current = requestAnimationFrame(step)
+          } else {
+            resolve()
+          }
+        }
+        animationFrameRef.current = requestAnimationFrame(step)
+      })
+    }
+
+    function crossfade(fromCanvas, toCanvas, duration) {
+      return new Promise((resolve) => {
+        const start = performance.now()
+        function step(now) {
+          if (cancelled) {
+            resolve()
+            return
+          }
+          const t = Math.min(1, (now - start) / duration)
+          ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
+          ctx.globalAlpha = 1 - t
+          ctx.drawImage(fromCanvas, 0, 0, CANVAS_SIZE, CANVAS_SIZE)
+          ctx.globalAlpha = t
+          ctx.drawImage(toCanvas, 0, 0, CANVAS_SIZE, CANVAS_SIZE)
+          ctx.globalAlpha = 1
+          if (t < 1) {
+            animationFrameRef.current = requestAnimationFrame(step)
+          } else {
+            resolve()
+          }
+        }
+        animationFrameRef.current = requestAnimationFrame(step)
+      })
+    }
+
+    // Freeze the outgoing sprite's current frame so the pixelate-out phase
+    // isn't disrupted by the GIF continuing to animate underneath.
+    const snapshotCtx = snapshotCanvas.getContext('2d')
+    snapshotCtx.imageSmoothingEnabled = false
+    snapshotCtx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
+    snapshotCtx.drawImage(img, 0, 0, CANVAS_SIZE, CANVAS_SIZE)
+
+    img.style.opacity = '0'
+
+    runPhase(snapshotCanvas, CANVAS_SIZE, MIN_BLOCK_SIZE)
+      .then(() => {
+        if (cancelled) return undefined
+        // Capture the peak-pixelation frame of the outgoing sprite so it can
+        // be crossfaded against, since the visible canvas gets overwritten next.
+        const oldPeakCtx = oldPeakCanvas.getContext('2d')
+        oldPeakCtx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
+        oldPeakCtx.drawImage(canvas, 0, 0)
+
+        const loadPromise = waitForLoad()
+        img.src = nextUrl
+        return loadPromise
+      })
+      .then(() => {
+        if (cancelled) return undefined
+        const newPeakCtx = newPeakCanvas.getContext('2d')
+        drawPixelated(newPeakCtx, tempCanvas, img, MIN_BLOCK_SIZE)
+        return crossfade(oldPeakCanvas, newPeakCanvas, CROSSFADE_MS)
+      })
+      .then(() => {
+        if (cancelled) return undefined
+        return runPhase(img, MIN_BLOCK_SIZE, CANVAS_SIZE)
+      })
+      .then(() => {
+        if (cancelled) return
+        ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
+        img.style.opacity = '1'
+      })
+      .catch(() => {})
+
+    return () => {
+      cancelled = true
+      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current)
+    }
+  }, [selected])
+
   function handleConfirm() {
     if (!selected) return
     const newVote = {
@@ -97,7 +275,6 @@ export default function Dex() {
       <div
         className="dex-page"
         style={{
-          background: '#0f0f0f',
           color: '#f0f0f0',
           minHeight: '100vh',
           padding: '24px',
@@ -146,7 +323,6 @@ export default function Dex() {
 
   function handleSelect(p) {
     setSelected(p)
-    setSpriteError(false)
     setQuery('')
     setIsOpen(false)
   }
@@ -155,7 +331,6 @@ export default function Dex() {
     <div
       className="dex-page"
       style={{
-        background: '#0f0f0f',
         color: '#f0f0f0',
         minHeight: '100vh',
         padding: '24px',
@@ -251,6 +426,7 @@ export default function Dex() {
 
       {selected && (
         <div
+          className="preview-fade-in"
           style={{
             marginTop: '24px',
             width: '400px',
@@ -264,20 +440,39 @@ export default function Dex() {
             gap: '8px',
           }}
         >
-          <img
-            src={
-              selected.dexNumber > 649 || spriteError
-                ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${selected.dexNumber}.png`
-                : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${selected.dexNumber}.gif`
-            }
-            onError={() => setSpriteError(true)}
-            alt={selected.name}
-            style={{
-              width: '300px',
-              height: '300px',
-              imageRendering: 'pixelated',
-            }}
-          />
+          <div style={{ position: 'relative', width: '300px', height: '300px' }}>
+            <img
+              ref={imgRef}
+              alt={selected.name}
+              onError={() => {
+                const fallback = spriteUrl(selected.dexNumber, true)
+                if (imgRef.current && imgRef.current.src !== fallback) {
+                  imgRef.current.src = fallback
+                }
+              }}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '300px',
+                height: '300px',
+                imageRendering: 'pixelated',
+              }}
+            />
+            <canvas
+              ref={canvasRef}
+              width={CANVAS_SIZE}
+              height={CANVAS_SIZE}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '300px',
+                height: '300px',
+                imageRendering: 'pixelated',
+              }}
+            />
+          </div>
           <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{capitalize(selected.name)}</div>
           <div style={{ fontSize: '13px', color: '#888' }}>{formatDexNumber(selected.dexNumber)}</div>
           <button

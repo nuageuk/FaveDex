@@ -1,7 +1,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  background: #0f0f0f;
+  background: radial-gradient(circle at 50% 35%, #171717 0%, #0f0f0f 55%, #090909 100%);
   color: #f0f0f0;
   font-family: system-ui, sans-serif;
   height: 100vh;
@@ -69,6 +69,40 @@ p {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+@keyframes previewFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.preview-fade-in {
+  animation: previewFadeIn 0.4s ease both;
+}
+
+@keyframes spritePixelate {
+  0% {
+    filter: blur(0);
+    opacity: 1;
+  }
+  40% {
+    filter: blur(10px) contrast(1.4);
+    opacity: 0.35;
+  }
+  100% {
+    filter: blur(0);
+    opacity: 1;
+  }
+}
+
+.sprite-pixelate {
+  animation: spritePixelate 0.5s steps(8, end);
 }
 
 * {
