@@ -1,5 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Filter } from 'bad-words'
+
+const profanityFilter = new Filter()
+
+function stripHtmlTags(value) {
+  return value.replace(/<[^>]*>/g, '')
+}
 
 function capitalize(name) {
   if (typeof name !== 'string' || name.length === 0) return ''
@@ -71,6 +78,9 @@ export default function Dex() {
   })
   const [confirmSpriteError, setConfirmSpriteError] = useState(false)
   const [showLocationPrompt, setShowLocationPrompt] = useState(false)
+  const [username, setUsername] = useState('')
+  const [reason, setReason] = useState('')
+  const [formError, setFormError] = useState(null)
 
   const containerRef = useRef(null)
   const imgRef = useRef(null)
@@ -262,12 +272,16 @@ export default function Dex() {
 
   function finalizeVote(location) {
     if (!selected) return
+    const cleanUsername = stripHtmlTags(username.trim())
+    const cleanReason = stripHtmlTags(reason.trim())
     const newVote = {
       pokemonId: selected.dexNumber,
       pokemonName: selected.name,
       generation: getGeneration(selected.dexNumber),
       timestamp: Date.now(),
       location,
+      username: cleanUsername.length > 0 ? cleanUsername : null,
+      reason: cleanReason.length > 0 ? cleanReason : null,
     }
     localStorage.setItem(VOTE_KEY, JSON.stringify(newVote))
     setVote(newVote)
@@ -276,6 +290,16 @@ export default function Dex() {
 
   function handleConfirm() {
     if (!selected) return
+    const trimmedUsername = username.trim()
+    const trimmedReason = reason.trim()
+    if (
+      (trimmedUsername.length > 0 && profanityFilter.isProfane(trimmedUsername)) ||
+      (trimmedReason.length > 0 && profanityFilter.isProfane(trimmedReason))
+    ) {
+      setFormError('Please remove inappropriate language before submitting.')
+      return
+    }
+    setFormError(null)
     setShowLocationPrompt(true)
   }
 
@@ -359,6 +383,9 @@ export default function Dex() {
     setSelected(p)
     setQuery('')
     setIsOpen(false)
+    setUsername('')
+    setReason('')
+    setFormError(null)
   }
 
   return (
@@ -509,6 +536,69 @@ export default function Dex() {
           </div>
           <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{capitalize(selected.name)}</div>
           <div style={{ fontSize: '13px', color: '#888' }}>{formatDexNumber(selected.dexNumber)}</div>
+
+          {!showLocationPrompt && (
+            <>
+              <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: '12px', color: '#888' }}>
+                  Username <span style={{ color: '#555' }}>(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => {
+                    const cleaned = e.target.value.replace(/[^a-zA-Z0-9_]/g, '').slice(0, 20)
+                    setUsername(cleaned)
+                  }}
+                  maxLength={20}
+                  placeholder="e.g. ash_ketchum"
+                  style={{
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    padding: '8px 10px',
+                    background: '#0f0f0f',
+                    color: '#f0f0f0',
+                    border: '1px solid #333',
+                    borderRadius: '4px',
+                    fontSize: '13px',
+                    outline: 'none',
+                  }}
+                />
+              </div>
+
+              <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label style={{ fontSize: '12px', color: '#888' }}>
+                  Reason <span style={{ color: '#555' }}>(optional)</span>
+                </label>
+                <textarea
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value.slice(0, 280))}
+                  maxLength={280}
+                  rows={3}
+                  placeholder="Why is this your favourite?"
+                  style={{
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    padding: '8px 10px',
+                    background: '#0f0f0f',
+                    color: '#f0f0f0',
+                    border: '1px solid #333',
+                    borderRadius: '4px',
+                    fontSize: '13px',
+                    outline: 'none',
+                    resize: 'vertical',
+                    fontFamily: 'inherit',
+                  }}
+                />
+                <div style={{ fontSize: '11px', color: '#555', textAlign: 'right' }}>{reason.length}/280</div>
+              </div>
+
+              {formError && (
+                <div style={{ fontSize: '12px', color: '#ff6b6b', textAlign: 'center' }}>{formError}</div>
+              )}
+            </>
+          )}
+
           {showLocationPrompt ? (
             <div
               style={{
