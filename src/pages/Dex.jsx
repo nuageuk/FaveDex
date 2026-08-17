@@ -4,6 +4,10 @@ function capitalize(name) {
   return name.charAt(0).toUpperCase() + name.slice(1)
 }
 
+function formatDexNumber(n) {
+  return `#${String(n).padStart(3, '0')}`
+}
+
 export default function Dex() {
   const [pokemon, setPokemon] = useState([])
   const [loading, setLoading] = useState(true)
@@ -11,6 +15,7 @@ export default function Dex() {
   const [query, setQuery] = useState('')
   const [isOpen, setIsOpen] = useState(false)
   const [selected, setSelected] = useState(null)
+  const [spriteError, setSpriteError] = useState(false)
 
   const containerRef = useRef(null)
 
@@ -51,6 +56,7 @@ export default function Dex() {
 
   function handleSelect(p) {
     setSelected(p)
+    setSpriteError(false)
     setQuery('')
     setIsOpen(false)
   }
@@ -151,6 +157,56 @@ export default function Dex() {
           </div>
         )}
       </div>
+
+      {selected && (
+        <div
+          style={{
+            marginTop: '24px',
+            width: '280px',
+            background: '#1a1a1a',
+            border: '1px solid #333',
+            borderRadius: '4px',
+            padding: '16px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+        >
+          <img
+            src={
+              selected.dexNumber > 649 || spriteError
+                ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${selected.dexNumber}.png`
+                : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${selected.dexNumber}.gif`
+            }
+            onError={() => setSpriteError(true)}
+            alt={selected.name}
+            style={{
+              width: '96px',
+              height: '96px',
+              imageRendering: 'pixelated',
+            }}
+          />
+          <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{capitalize(selected.name)}</div>
+          <div style={{ fontSize: '13px', color: '#888' }}>{formatDexNumber(selected.dexNumber)}</div>
+          <button
+            disabled
+            style={{
+              marginTop: '8px',
+              width: '100%',
+              padding: '10px 12px',
+              background: '#2a2a2a',
+              color: '#666',
+              border: '1px solid #333',
+              borderRadius: '4px',
+              fontSize: '14px',
+              cursor: 'not-allowed',
+            }}
+          >
+            Confirm my pick
+          </button>
+        </div>
+      )}
     </div>
   )
 }
