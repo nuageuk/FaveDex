@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 function capitalize(name) {
+  if (typeof name !== 'string' || name.length === 0) return ''
   return name.charAt(0).toUpperCase() + name.slice(1)
 }
 
@@ -14,6 +15,23 @@ function spriteUrl(id, useFallback) {
   return useFallback
     ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`
     : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${id}.gif`
+}
+
+const GENERATION_RANGES = [
+  [1, 151],
+  [152, 251],
+  [252, 386],
+  [387, 493],
+  [494, 649],
+  [650, 721],
+  [722, 809],
+  [810, 905],
+  [906, 1025],
+]
+
+function getGeneration(id) {
+  const index = GENERATION_RANGES.findIndex(([start, end]) => id >= start && id <= end)
+  return index === -1 ? null : index + 1
 }
 
 export default function Dex() {
@@ -64,7 +82,12 @@ export default function Dex() {
 
   function handleConfirm() {
     if (!selected) return
-    const newVote = { id: selected.dexNumber, name: selected.name }
+    const newVote = {
+      pokemonId: selected.dexNumber,
+      pokemonName: selected.name,
+      generation: getGeneration(selected.dexNumber),
+      timestamp: Date.now(),
+    }
     localStorage.setItem(VOTE_KEY, JSON.stringify(newVote))
     setVote(newVote)
   }
@@ -95,16 +118,17 @@ export default function Dex() {
           }}
         >
           <img
-            src={spriteUrl(vote.id, vote.id > 649 || confirmSpriteError)}
+            src={spriteUrl(vote.pokemonId, vote.pokemonId > 649 || confirmSpriteError)}
             onError={() => setConfirmSpriteError(true)}
-            alt={vote.name}
+            alt={vote.pokemonName}
             style={{
               width: '300px',
               height: '300px',
               imageRendering: 'pixelated',
             }}
           />
-          <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{capitalize(vote.name)}</div>
+          <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{capitalize(vote.pokemonName)}</div>
+          <div style={{ fontSize: '13px', color: '#888' }}>Generation {vote.generation}</div>
           <div style={{ fontSize: '13px', color: '#888' }}>Thanks for voting!</div>
         </div>
       </div>
