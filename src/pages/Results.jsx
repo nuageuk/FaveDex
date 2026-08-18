@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import '../App.css'
 import { getGeneration } from './Dex'
 import { supabase } from '../lib/supabase'
@@ -70,8 +70,11 @@ export function aggregateVotes(votes) {
 }
 
 export default function Results() {
-  const [selectedGen, setSelectedGen] = useState('all')
-  const [searchQuery, setSearchQuery] = useState('')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const genParam = searchParams.get('gen')
+  const parsedGen = genParam !== null ? Number(genParam) : null
+  const selectedGen = parsedGen !== null && GENERATIONS.includes(parsedGen) ? parsedGen : 'all'
+  const searchQuery = searchParams.get('q') ?? ''
   const [leaderboard, setLeaderboard] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -111,8 +114,34 @@ export default function Results() {
   }, [])
 
   function handleSelectGen(gen) {
-    setSelectedGen(gen)
     setIsGenOpen(false)
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        if (gen === 'all') {
+          next.delete('gen')
+        } else {
+          next.set('gen', String(gen))
+        }
+        return next
+      },
+      { replace: true }
+    )
+  }
+
+  function handleSearchChange(value) {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        if (value.length === 0) {
+          next.delete('q')
+        } else {
+          next.set('q', value)
+        }
+        return next
+      },
+      { replace: true }
+    )
   }
 
   const genFilteredLeaderboard =
@@ -125,6 +154,8 @@ export default function Results() {
       ? genFilteredLeaderboard.filter((entry) => entry.pokemonName.toLowerCase().includes(trimmedSearch))
       : genFilteredLeaderboard
   const ranks = computeRanks(filteredLeaderboard)
+  const paramsString = searchParams.toString()
+  const currentUrl = `/results${paramsString ? `?${paramsString}` : ''}`
 
   if (loading) return <div style={{ color: '#f0f0f0' }}>Loading...</div>
   if (error) return <div style={{ color: '#f0f0f0' }}>Error: {error}</div>
@@ -155,7 +186,7 @@ export default function Results() {
           <input
             type="text"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             placeholder="Search Pokémon..."
             style={{
               flex: 1,
@@ -281,6 +312,7 @@ export default function Results() {
                 <li key={entry.pokemonId} style={{ listStyle: 'none' }}>
                   <Link
                     to={`/pokemon/${entry.pokemonId}`}
+                    state={{ from: currentUrl }}
                     className="leaderboard-item"
                     style={{
                       boxSizing: 'border-box',

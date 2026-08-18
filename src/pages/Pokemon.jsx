@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, useLocation, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { getGeneration } from './Dex'
 import { aggregateVotes, computeRanks, formatRank } from './Results'
@@ -37,6 +37,8 @@ function spriteUrl(id, useFallback) {
 
 export default function Pokemon() {
   const { id } = useParams()
+  const location = useLocation()
+  const backHref = location.state?.from ?? '/results'
   const pokemonId = Number(id)
   const [votes, setVotes] = useState([])
   const [loading, setLoading] = useState(true)
@@ -123,7 +125,7 @@ export default function Pokemon() {
     >
       <div style={{ width: '100%', maxWidth: '480px', display: 'flex', flexDirection: 'column' }}>
         <Link
-          to="/results"
+          to={backHref}
           style={{
             display: 'inline-block',
             marginBottom: '16px',
