@@ -5,13 +5,7 @@
 [favedex.vercel.app](https://favedex.vercel.app)
 
 <div align="center">
-  <img src="screenshot.png" width="100%" />
-</div>
-
-<div align="center">
-  <img src="screenshot1.png" width="32%" />
-  <img src="screenshot2.png" width="32%" />
-  <img src="screenshot3.png" width="32%" />
+  <img src="screenshot.png" width="60%" />
 </div>
 
 ---
@@ -26,9 +20,13 @@ Each Pokémon has its own profile page showing total votes, leaderboard rank, an
 
 ## Workflow
 
+| Vote | Leaderboard | Profile |
+|:---:|:---:|:---:|
+| ![](screenshot1.png) | ![](screenshot2.png) | ![](screenshot3.png) |
+
 1. Pick a Pokémon from the searchable dropdown
 2. Optionally add a username and reason (up to 280 characters)
-3. Allow or skip location — if allowed, your coordinates are reverse-geocoded to city and country client-side before submission
+3. Allow or skip location — your coordinates are reverse-geocoded to city and country client-side before submission
 4. Hit confirm — your vote is submitted to a Vercel Edge Function, rate-limited by IP, and inserted into Supabase
 5. View the live leaderboard or your Pokémon's profile page
 
