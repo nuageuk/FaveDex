@@ -67,6 +67,7 @@ function BackgroundVideo() {
   return (
     <>
       <video
+        className="bg-video"
         autoPlay
         loop
         muted
@@ -83,6 +84,7 @@ function BackgroundVideo() {
         }}
       />
       <div
+        className="bg-video-overlay"
         style={{
           position: 'fixed',
           top: 0,
@@ -399,9 +401,11 @@ export default function Dex() {
         <div
           style={{
             width: '400px',
-            background: '#1a1a1a',
-            border: '1px solid #333',
-            borderRadius: '4px',
+            background: 'var(--panel-bg)',
+            backdropFilter: 'var(--panel-blur)',
+            WebkitBackdropFilter: 'var(--panel-blur)',
+            border: '1px solid var(--panel-border-color)',
+            borderRadius: '12px',
             padding: '16px',
             display: 'flex',
             flexDirection: 'column',
@@ -445,9 +449,11 @@ export default function Dex() {
         <div
           style={{
             width: '400px',
-            background: '#1a1a1a',
-            border: '1px solid #333',
-            borderRadius: '4px',
+            background: 'var(--panel-bg)',
+            backdropFilter: 'var(--panel-blur)',
+            WebkitBackdropFilter: 'var(--panel-blur)',
+            border: '1px solid var(--panel-border-color)',
+            borderRadius: '12px',
             padding: '16px',
             display: 'flex',
             flexDirection: 'column',
@@ -524,9 +530,11 @@ export default function Dex() {
               top: 'calc(100% + 4px)',
               left: 0,
               width: '100%',
-              background: '#0f0f0f',
-              border: '1px solid #333',
-              borderRadius: '4px',
+              background: 'var(--panel-bg)',
+              backdropFilter: 'var(--panel-blur)',
+              WebkitBackdropFilter: 'var(--panel-blur)',
+              border: '1px solid var(--panel-border-color)',
+              borderRadius: '12px',
               overflow: 'hidden',
               zIndex: 10,
               boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5)',
@@ -589,9 +597,11 @@ export default function Dex() {
           style={{
             marginTop: '24px',
             width: '400px',
-            background: '#1a1a1a',
-            border: '1px solid #333',
-            borderRadius: '4px',
+            background: 'var(--panel-bg)',
+            backdropFilter: 'var(--panel-blur)',
+            WebkitBackdropFilter: 'var(--panel-blur)',
+            border: '1px solid var(--panel-border-color)',
+            borderRadius: '12px',
             padding: '16px',
             display: 'flex',
             flexDirection: 'column',

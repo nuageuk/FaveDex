@@ -9,8 +9,29 @@ const LINKS = [
   { to: '/results', label: 'Leaderboard' },
 ]
 
-export default function Navbar() {
+export default function Navbar({ theme, onToggleTheme }) {
   const [isOpen, setIsOpen] = useState(false)
+
+  const themeToggleButton = (
+    <button
+      onClick={onToggleTheme}
+      aria-label={theme === 'video' ? 'Switch to dark theme' : 'Switch to video theme'}
+      title={theme === 'video' ? 'Switch to dark theme' : 'Switch to video theme'}
+      style={{
+        background: 'transparent',
+        border: '1px solid #333',
+        borderRadius: '4px',
+        width: '28px',
+        height: '28px',
+        fontSize: '14px',
+        lineHeight: 1,
+        cursor: 'pointer',
+        flexShrink: 0,
+      }}
+    >
+      {theme === 'video' ? '🎥' : '🌙'}
+    </button>
+  )
 
   return (
     <>
@@ -26,6 +47,7 @@ export default function Navbar() {
           <span />
         </button>
         <div className="navbar-mobile-title">Nuage&apos;s PC</div>
+        <div style={{ marginLeft: 'auto' }}>{themeToggleButton}</div>
       </div>
 
       {isOpen && <div className="navbar-backdrop" onClick={() => setIsOpen(false)} />}
@@ -34,8 +56,10 @@ export default function Navbar() {
         className={`navbar${isOpen ? ' navbar-open' : ''}`}
         style={{
           width: `${NAVBAR_WIDTH}px`,
-          background: '#0a0a0a',
-          borderRight: '1px solid #222',
+          background: 'var(--panel-bg)',
+          backdropFilter: 'var(--panel-blur)',
+          WebkitBackdropFilter: 'var(--panel-blur)',
+          borderRight: '1px solid var(--panel-border-color)',
           display: 'flex',
           flexDirection: 'column',
           padding: '24px 16px',
@@ -46,14 +70,23 @@ export default function Navbar() {
         <div
           className="navbar-title"
           style={{
-            fontSize: '15px',
-            fontWeight: 700,
-            color: '#fff',
-            letterSpacing: '-0.5px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
             marginBottom: '32px',
           }}
         >
-          Nuage&apos;s PC
+          <span
+            style={{
+              fontSize: '15px',
+              fontWeight: 700,
+              color: '#fff',
+              letterSpacing: '-0.5px',
+            }}
+          >
+            Nuage&apos;s PC
+          </span>
+          {themeToggleButton}
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>

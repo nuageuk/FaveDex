@@ -1,5 +1,22 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+.theme-video {
+  --panel-bg: rgba(0, 0, 0, 0.45);
+  --panel-blur: blur(12px);
+  --panel-border-color: rgba(255, 255, 255, 0.08);
+}
+
+.theme-dark {
+  --panel-bg: rgba(20, 20, 20, 0.95);
+  --panel-blur: none;
+  --panel-border-color: #333;
+}
+
+.theme-dark .bg-video,
+.theme-dark .bg-video-overlay {
+  display: none;
+}
+
 body {
   background: radial-gradient(circle at 50% 35%, #171717 0%, #0f0f0f 55%, #090909 100%);
   color: #f0f0f0;
@@ -184,8 +201,10 @@ p {
     right: 0;
     height: 56px;
     padding: 0 16px;
-    background: #0a0a0a;
-    border-bottom: 1px solid #222;
+    background: var(--panel-bg);
+    backdrop-filter: var(--panel-blur);
+    -webkit-backdrop-filter: var(--panel-blur);
+    border-bottom: 1px solid var(--panel-border-color);
     box-sizing: border-box;
     z-index: 200;
   }

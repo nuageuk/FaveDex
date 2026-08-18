@@ -103,9 +103,11 @@ export default function Results() {
         {filteredLeaderboard.length === 0 ? (
           <div
             style={{
-              background: '#1a1a1a',
-              border: '1px solid #333',
-              borderRadius: '4px',
+              background: 'var(--panel-bg)',
+              backdropFilter: 'var(--panel-blur)',
+              WebkitBackdropFilter: 'var(--panel-blur)',
+              border: '1px solid var(--panel-border-color)',
+              borderRadius: '12px',
               padding: '24px',
               textAlign: 'center',
               color: '#888',
@@ -136,9 +138,11 @@ export default function Results() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '12px',
-                  background: '#1a1a1a',
-                  border: '1px solid #333',
-                  borderRadius: '4px',
+                  background: 'var(--panel-bg)',
+                  backdropFilter: 'var(--panel-blur)',
+                  WebkitBackdropFilter: 'var(--panel-blur)',
+                  border: '1px solid var(--panel-border-color)',
+                  borderRadius: '12px',
                   padding: '10px 12px',
                 }}
               >
