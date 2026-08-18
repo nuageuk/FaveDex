@@ -6,6 +6,7 @@ FaveDex is a live, vote-based popularity tracker for all 1025 National Dex Poké
 
 [favedex.vercel.app](https://favedex.vercel.app)
 
+![FaveDex](screenshot.png)
 ---
 
 ## Features
