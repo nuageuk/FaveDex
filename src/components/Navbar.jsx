@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, Link } from 'react-router-dom'
 
 const NAVBAR_WIDTH = 200
 
@@ -8,6 +8,22 @@ const LINKS = [
   { to: '/dex', label: 'FaveDex' },
   { to: '/results', label: 'Leaderboard' },
 ]
+
+function VideoIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M8 5v14l11-7z" />
+    </svg>
+  )
+}
+
+function MoonIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z" />
+    </svg>
+  )
+}
 
 export default function Navbar({ theme, onToggleTheme }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -23,13 +39,15 @@ export default function Navbar({ theme, onToggleTheme }) {
         borderRadius: '4px',
         width: '28px',
         height: '28px',
-        fontSize: '14px',
-        lineHeight: 1,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: '#aaa',
         cursor: 'pointer',
         flexShrink: 0,
       }}
     >
-      {theme === 'video' ? '🎥' : '🌙'}
+      {theme === 'video' ? <VideoIcon /> : <MoonIcon />}
     </button>
   )
 
@@ -46,7 +64,9 @@ export default function Navbar({ theme, onToggleTheme }) {
           <span />
           <span />
         </button>
-        <div className="navbar-mobile-title">Nuage&apos;s PC</div>
+        <Link to="/" className="navbar-mobile-title" style={{ textDecoration: 'none' }}>
+          Nuage&apos;s PC
+        </Link>
         <div style={{ marginLeft: 'auto' }}>{themeToggleButton}</div>
       </div>
 
@@ -76,16 +96,18 @@ export default function Navbar({ theme, onToggleTheme }) {
             marginBottom: '32px',
           }}
         >
-          <span
+          <Link
+            to="/"
             style={{
               fontSize: '15px',
               fontWeight: 700,
               color: '#fff',
               letterSpacing: '-0.5px',
+              textDecoration: 'none',
             }}
           >
             Nuage&apos;s PC
-          </span>
+          </Link>
           {themeToggleButton}
         </div>
 

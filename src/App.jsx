@@ -7,7 +7,7 @@ import Pokemon from './pages/Pokemon.jsx'
 import Navbar from './components/Navbar.jsx'
 import { getStoredTheme, setStoredTheme } from './utils/theme'
 
-const BACKGROUND_VIDEO_ROUTES = ['/dex', '/results']
+const BACKGROUND_VIDEO_ROUTES = ['/', '/dex', '/results']
 
 function BackgroundVideo() {
   return (
