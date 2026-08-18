@@ -3,6 +3,7 @@ import { Routes, Route, useLocation } from 'react-router-dom'
 import Landing from './pages/Landing.jsx'
 import Dex from './pages/Dex.jsx'
 import Results from './pages/Results.jsx'
+import Pokemon from './pages/Pokemon.jsx'
 import Navbar from './components/Navbar.jsx'
 import { getStoredTheme, setStoredTheme } from './utils/theme'
 
@@ -58,7 +59,8 @@ export default function App() {
     setTheme((current) => (current === 'video' ? 'dark' : 'video'))
   }
 
-  const showBackgroundVideo = BACKGROUND_VIDEO_ROUTES.includes(location.pathname)
+  const showBackgroundVideo =
+    BACKGROUND_VIDEO_ROUTES.includes(location.pathname) || location.pathname.startsWith('/pokemon/')
 
   return (
     <div className={`theme-${theme}`}>
@@ -69,6 +71,7 @@ export default function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/dex" element={<Dex />} />
           <Route path="/results" element={<Results />} />
+          <Route path="/pokemon/:id" element={<Pokemon />} />
         </Routes>
       </div>
     </div>

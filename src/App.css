@@ -163,6 +163,14 @@ p {
 .leaderboard-item {
   padding: 10px 12px;
   max-width: 100%;
+  border: 1px solid var(--panel-border-color);
+  transition: all 0.15s ease;
+}
+
+.leaderboard-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 @media (max-width: 399px) {
