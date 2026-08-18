@@ -112,6 +112,24 @@ function parseGenerationName(name) {
   return GENERATION_NAME_TO_NUMBER[name] ?? null
 }
 
+const FORM_GENERATION_MAP = {
+  alola: 7,
+  galar: 8,
+  hisui: 8,
+  paldea: 9,
+  mega: 6,
+  gmax: 8,
+  primal: 6,
+  origin: 4,
+  therian: 5,
+}
+
+function getFormGeneration(slug) {
+  const segments = slug.split('-')
+  const match = segments.find((segment) => segment in FORM_GENERATION_MAP)
+  return match ? FORM_GENERATION_MAP[match] : null
+}
+
 function getTimeUntilMidnight() {
   const now = new Date()
   const midnight = new Date(now)
@@ -372,8 +390,15 @@ export default function Dex() {
         const pokemonRes = await fetch(`https://pokeapi.co/api/v2/pokemon/${selected.dexNumber}`)
         if (!pokemonRes.ok) throw new Error(`Request failed with status ${pokemonRes.status}`)
         const pokemonData = await pokemonRes.json()
-
         const baseId = extractIdFromUrl(pokemonData.species.url)
+
+        const formGeneration = getFormGeneration(selected.name)
+        if (formGeneration !== null) {
+          if (cancelled) return
+          setFormInfo({ baseId, generation: formGeneration })
+          return
+        }
+
         const speciesRes = await fetch(pokemonData.species.url)
         if (!speciesRes.ok) throw new Error(`Request failed with status ${speciesRes.status}`)
         const speciesData = await speciesRes.json()

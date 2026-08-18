@@ -57,7 +57,7 @@ export default async function handler(request) {
 
   const { pokemon_id: pokemonId, pokemon_name: pokemonName, generation, username, reason, city, country } = payload
 
-  if (!Number.isInteger(pokemonId) || pokemonId < 1 || pokemonId > 1025) {
+  if (!Number.isInteger(pokemonId) || pokemonId < 1) {
     return jsonResponse(400, { error: 'Invalid pokemon_id' })
   }
   if (typeof pokemonName !== 'string' || pokemonName.trim().length === 0) {
