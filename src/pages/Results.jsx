@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import '../App.css'
-import { getGeneration } from './Dex'
 import { supabase } from '../lib/supabase'
 
 function capitalize(name) {
@@ -265,9 +264,7 @@ export default function Results() {
   }
 
   const genFilteredLeaderboard =
-    selectedGen === 'all'
-      ? leaderboard
-      : leaderboard.filter((entry) => getGeneration(entry.pokemonId) === selectedGen)
+    selectedGen === 'all' ? leaderboard : leaderboard.filter((entry) => entry.generation === selectedGen)
   const trimmedSearch = searchQuery.trim().toLowerCase()
   const filteredLeaderboard =
     trimmedSearch.length > 0
