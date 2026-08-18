@@ -733,9 +733,16 @@ export default function Dex() {
                 <div style={{ fontSize: '11px', color: '#555', textAlign: 'right' }}>{reason.length}/280</div>
               </div>
 
-              {formError && (
-                <div style={{ fontSize: '12px', color: '#ff6b6b', textAlign: 'center' }}>{formError}</div>
-              )}
+              <div
+                style={{
+                  fontSize: '12px',
+                  color: '#ff6b6b',
+                  textAlign: 'center',
+                  visibility: formError ? 'visible' : 'hidden',
+                }}
+              >
+                {formError || ' '}
+              </div>
             </>
           )}
 
