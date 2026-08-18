@@ -66,11 +66,30 @@ Browser → GET supabase/votes (publishable key, RLS read-only)
 - Fully mobile responsive
 - Server-side IP rate limiting via Vercel Edge Functions
 
+
+---
+
+## Roadmap
+
+- [x] Vote submission with username and reason
+- [x] Reverse geocoding to city and country
+- [x] Cookie + server-side IP rate limiting
+- [x] Live leaderboard with generation filter and medal rankings
+- [x] Pokémon profile pages with vote reasons
+- [x] Glassmorphism UI with video background and dark mode toggle
+- [x] Mobile responsive
+- [x] Deployed on Vercel with Supabase backend
+- [ ] Heart reacts on reasons
+- [ ] World map view of votes by location
+- [ ] Share your vote / profile page
+- [ ] Pokémon type colours on profile pages
+- [ ] Custom domain (nuagespc.com)
+
 ---
 
 ## Part of Nuage's PC
 
-FaveDex is part of [Nuage's PC](https://favedex.vercel.app), a hub for Pokémon fan projects alongside GlitchMon and Shiny Hunt Simulator.
+FaveDex is part of Nuage's PC, currently in development. A hub for Pokémon fan projects such as GlitchMon and Shiny Hunt Sim.
 
 ---
 
