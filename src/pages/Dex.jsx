@@ -63,44 +63,6 @@ export function getGeneration(id) {
   return index === -1 ? null : index + 1
 }
 
-function BackgroundVideo() {
-  return (
-    <>
-      <video
-        className="bg-video"
-        autoPlay
-        loop
-        muted
-        playsInline
-        src="/output.webm"
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-          zIndex: -1,
-        }}
-      />
-      <div
-        className="bg-video-overlay"
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          background: 'rgba(0, 0, 0, 0.55)',
-          backdropFilter: 'blur(3px)',
-          WebkitBackdropFilter: 'blur(3px)',
-          zIndex: -1,
-        }}
-      />
-    </>
-  )
-}
-
 function getTimeUntilMidnight() {
   const now = new Date()
   const midnight = new Date(now)
@@ -397,7 +359,6 @@ export default function Dex() {
           fontFamily: 'system-ui, sans-serif',
         }}
       >
-        <BackgroundVideo />
         <div
           style={{
             width: '400px',
@@ -445,7 +406,6 @@ export default function Dex() {
           fontFamily: 'system-ui, sans-serif',
         }}
       >
-        <BackgroundVideo />
         <div
           style={{
             width: '400px',
@@ -501,7 +461,6 @@ export default function Dex() {
         fontFamily: 'system-ui, sans-serif',
       }}
     >
-      <BackgroundVideo />
       <div ref={containerRef} style={{ position: 'relative', width: '280px' }}>
         <button
           onClick={() => setIsOpen((open) => !open)}
