@@ -1,16 +1,38 @@
-# React + Vite
+# FaveDex
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+**Vote for your favourite Pokémon. See what the world picks.**
 
-Currently, two official plugins are available:
+FaveDex is a live, vote-based popularity tracker for all 1025 National Dex Pokémon. Every vote is tagged with your location to build a real-time picture of the world's favourite Pokémon, complete with usernames and reasons why.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+[favedex.vercel.app](https://favedex.vercel.app)
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Features
 
-## Expanding the Oxlint configuration
+- Vote for any of the 1025 National Dex Pokémon once per day
+- Votes tagged by city and country via reverse geocoding
+- Live leaderboard with generation filter, medal rankings, and tied-rank support
+- Pokémon profile pages showing vote reasons and usernames
+- Glassmorphism UI with animated Gen 3 video background and dark mode toggle
+- Fully mobile responsive
+- Server-side IP rate limiting via Vercel Edge Functions
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+## Tech Stack
+
+- **Frontend** — React, Vite
+- **Backend** — Supabase (Postgres + RLS), Vercel Edge Functions
+- **Sprites** — PokeAPI CDN (animated Gen 1–5, static beyond)
+- **Geocoding** — Nominatim (OpenStreetMap)
+
+## Architecture
+
+Votes are submitted via a Vercel Edge Function (`/api/vote`) which handles input validation, IP-based rate limiting, and insertion using the Supabase service key — keeping privileged credentials server-side only. The client uses the publishable key for read-only leaderboard and profile queries, protected by Row Level Security.
+
+## Part of Nuage's PC
+
+FaveDex is part of [Nuage's PC](https://favedex.vercel.app), a hub for Pokémon fan projects alongside GlitchMon and Shiny Hunt Simulator.
+
+---
+
+*Built by [nuageuk](https://github.com/nuageuk)*
