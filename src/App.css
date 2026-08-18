@@ -117,38 +117,6 @@ p {
   padding: 24px;
 }
 
-.gen-filter-select {
-  width: 100%;
-  max-width: 220px;
-  box-sizing: border-box;
-  padding: 8px 12px;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: var(--panel-blur);
-  -webkit-backdrop-filter: var(--panel-blur);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  color: #f0f0f0;
-  font-size: 13px;
-  font-family: inherit;
-  cursor: pointer;
-  appearance: none;
-  -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23aaaaaa'%3E%3Cpath d='M5.5 7.5l4.5 4.5 4.5-4.5' stroke='%23aaaaaa' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  background-size: 16px;
-}
-
-.gen-filter-select:focus {
-  outline: none;
-  border-color: rgba(255, 255, 255, 0.3);
-}
-
-.gen-filter-select option {
-  background: #1a1a1a;
-  color: #f0f0f0;
-}
-
 .leaderboard-container {
   box-sizing: border-box;
   width: 480px;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import '../App.css'
 import { getGeneration } from './Dex'
@@ -44,6 +44,11 @@ function computeRanks(entries) {
 }
 
 const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+const GEN_OPTIONS = ['all', ...GENERATIONS]
+
+function genLabel(gen) {
+  return gen === 'all' ? 'All' : `Gen ${gen}`
+}
 
 function aggregateVotes(votes) {
   const byPokemon = new Map()
@@ -69,6 +74,8 @@ export default function Results() {
   const [leaderboard, setLeaderboard] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [isGenOpen, setIsGenOpen] = useState(false)
+  const genFilterRef = useRef(null)
 
   useEffect(() => {
     let cancelled = false
@@ -91,6 +98,21 @@ export default function Results() {
       cancelled = true
     }
   }, [])
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (genFilterRef.current && !genFilterRef.current.contains(e.target)) {
+        setIsGenOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  function handleSelectGen(gen) {
+    setSelectedGen(gen)
+    setIsGenOpen(false)
+  }
 
   const filteredLeaderboard =
     selectedGen === 'all'
@@ -116,18 +138,71 @@ export default function Results() {
         </h1>
 
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
-          <select
-            className="gen-filter-select"
-            value={selectedGen}
-            onChange={(e) => setSelectedGen(e.target.value === 'all' ? 'all' : Number(e.target.value))}
-          >
-            <option value="all">All</option>
-            {GENERATIONS.map((gen) => (
-              <option key={gen} value={gen}>
-                {`Gen ${gen}`}
-              </option>
-            ))}
-          </select>
+          <div ref={genFilterRef} style={{ position: 'relative', width: '100%', maxWidth: '220px' }}>
+            <button
+              onClick={() => setIsGenOpen((open) => !open)}
+              style={{
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '10px 12px',
+                background: '#1a1a1a',
+                color: '#f0f0f0',
+                border: '1px solid #333',
+                borderRadius: '4px',
+                fontSize: '14px',
+                cursor: 'pointer',
+              }}
+            >
+              <span>{genLabel(selectedGen)}</span>
+              <span style={{ color: '#888' }}>{isGenOpen ? '▲' : '▼'}</span>
+            </button>
+
+            {isGenOpen && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 4px)',
+                  left: 0,
+                  width: '100%',
+                  background: 'var(--panel-bg)',
+                  backdropFilter: 'var(--panel-blur)',
+                  WebkitBackdropFilter: 'var(--panel-blur)',
+                  border: '1px solid var(--panel-border-color)',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  zIndex: 10,
+                  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5)',
+                }}
+              >
+                <ul
+                  style={{
+                    listStyle: 'none',
+                    margin: 0,
+                    padding: 0,
+                    maxHeight: '240px',
+                    overflowY: 'auto',
+                  }}
+                >
+                  {GEN_OPTIONS.map((gen) => (
+                    <li
+                      key={gen}
+                      onClick={() => handleSelectGen(gen)}
+                      style={{
+                        padding: '8px 12px',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        color: '#f0f0f0',
+                      }}
+                    >
+                      {genLabel(gen)}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
         </div>
 
         {filteredLeaderboard.length === 0 ? (
