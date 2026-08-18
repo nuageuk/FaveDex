@@ -280,6 +280,10 @@ p {
   animation: pageFadeIn 200ms ease;
 }
 
+.leaderboard-list {
+  animation: pageFadeIn 200ms ease;
+}
+
 @keyframes navLinkSlideIn {
   from {
     opacity: 0;

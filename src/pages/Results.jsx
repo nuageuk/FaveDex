@@ -297,6 +297,8 @@ export default function Results() {
           </div>
         ) : (
           <ul
+            key={`${selectedGen}-${trimmedSearch}`}
+            className="leaderboard-list"
             style={{
               listStyle: 'none',
               margin: 0,
