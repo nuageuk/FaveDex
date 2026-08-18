@@ -46,7 +46,7 @@ function drawPixelated(ctx, tempCanvas, img, blockSize) {
   ctx.drawImage(tempCanvas, 0, 0, size, size, 0, 0, CANVAS_SIZE, CANVAS_SIZE)
 }
 
-const GENERATION_RANGES = [
+export const GENERATION_RANGES = [
   [1, 151],
   [152, 251],
   [252, 386],
@@ -58,7 +58,7 @@ const GENERATION_RANGES = [
   [906, 1025],
 ]
 
-function getGeneration(id) {
+export function getGeneration(id) {
   const index = GENERATION_RANGES.findIndex(([start, end]) => id >= start && id <= end)
   return index === -1 ? null : index + 1
 }

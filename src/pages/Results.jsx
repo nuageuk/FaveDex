@@ -1,25 +1,9 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import '../App.css'
+import { getGeneration } from './Dex'
 
 const VOTE_KEY = 'favedex_vote'
-
-const GENERATION_RANGES = [
-  [1, 151],
-  [152, 251],
-  [252, 386],
-  [387, 493],
-  [494, 649],
-  [650, 721],
-  [722, 809],
-  [810, 905],
-  [906, 1025],
-]
-
-function getGeneration(id) {
-  const index = GENERATION_RANGES.findIndex(([start, end]) => id >= start && id <= end)
-  return index === -1 ? null : index + 1
-}
 
 function capitalize(name) {
   if (typeof name !== 'string' || name.length === 0) return ''
