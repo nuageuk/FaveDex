@@ -19,7 +19,7 @@ function staticSpriteUrl(id) {
 
 const RANK_MEDALS = ['🥇', '🥈', '🥉']
 
-function formatRank(rank) {
+export function formatRank(rank) {
   if (rank <= 3) return RANK_MEDALS[rank - 1]
   const lastTwo = rank % 100
   if (lastTwo >= 11 && lastTwo <= 13) return `${rank}th`
@@ -35,7 +35,7 @@ function formatRank(rank) {
   }
 }
 
-function computeRanks(entries) {
+export function computeRanks(entries) {
   const ranks = []
   entries.forEach((entry, index) => {
     ranks.push(index > 0 && entry.count === entries[index - 1].count ? ranks[index - 1] : index + 1)
@@ -50,7 +50,7 @@ function genLabel(gen) {
   return gen === 'all' ? 'All' : `Gen ${gen}`
 }
 
-function aggregateVotes(votes) {
+export function aggregateVotes(votes) {
   const byPokemon = new Map()
   votes.forEach((vote) => {
     if (!vote || typeof vote.pokemon_id !== 'number') return

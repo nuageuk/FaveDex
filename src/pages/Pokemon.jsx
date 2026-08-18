@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { getGeneration } from './Dex'
+import { aggregateVotes, computeRanks, formatRank } from './Results'
 
 function capitalize(name) {
   if (typeof name !== 'string' || name.length === 0) return ''
@@ -25,6 +26,7 @@ export default function Pokemon() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [spriteError, setSpriteError] = useState(false)
+  const [overallRank, setOverallRank] = useState(null)
 
   useEffect(() => {
     let cancelled = false
@@ -45,6 +47,25 @@ export default function Pokemon() {
         }
         setVotes(data ?? [])
         setLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [pokemonId])
+
+  useEffect(() => {
+    let cancelled = false
+
+    supabase
+      .from('votes')
+      .select('pokemon_id, pokemon_name, generation')
+      .then(({ data, error: fetchError }) => {
+        if (cancelled || fetchError) return
+        const leaderboard = aggregateVotes(data ?? [])
+        const ranks = computeRanks(leaderboard)
+        const index = leaderboard.findIndex((entry) => entry.pokemonId === pokemonId)
+        setOverallRank(index === -1 ? null : ranks[index])
       })
 
     return () => {
@@ -109,8 +130,22 @@ export default function Pokemon() {
           <div style={{ fontSize: '13px', color: '#888' }}>
             {formatDexNumber(pokemonId)} · Generation {generation}
           </div>
-          <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff' }}>
-            {votes.length} {votes.length === 1 ? 'vote' : 'votes'}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {overallRank !== null && (
+              <div
+                style={{
+                  fontSize: overallRank <= 3 ? '28px' : '20px',
+                  fontWeight: 'bold',
+                  lineHeight: 1,
+                  color: overallRank <= 3 ? undefined : '#888',
+                }}
+              >
+                {formatRank(overallRank)}
+              </div>
+            )}
+            <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff' }}>
+              {votes.length} {votes.length === 1 ? 'vote' : 'votes'}
+            </div>
           </div>
         </div>
 
