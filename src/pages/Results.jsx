@@ -1,7 +1,25 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import '../App.css'
 
 const VOTE_KEY = 'favedex_vote'
+
+const GENERATION_RANGES = [
+  [1, 151],
+  [152, 251],
+  [252, 386],
+  [387, 493],
+  [494, 649],
+  [650, 721],
+  [722, 809],
+  [810, 905],
+  [906, 1025],
+]
+
+function getGeneration(id) {
+  const index = GENERATION_RANGES.findIndex(([start, end]) => id >= start && id <= end)
+  return index === -1 ? null : index + 1
+}
 
 function capitalize(name) {
   if (typeof name !== 'string' || name.length === 0) return ''
@@ -47,7 +65,12 @@ function aggregateVotes(votes) {
 }
 
 export default function Results() {
+  const [selectedGen, setSelectedGen] = useState('all')
   const leaderboard = aggregateVotes(loadVotes())
+  const filteredLeaderboard =
+    selectedGen === 'all'
+      ? leaderboard
+      : leaderboard.filter((entry) => getGeneration(entry.pokemonId) === selectedGen)
 
   return (
     <div
@@ -64,7 +87,36 @@ export default function Results() {
           Leaderboard
         </h1>
 
-        {leaderboard.length === 0 ? (
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '6px',
+            marginBottom: '16px',
+            justifyContent: 'center',
+          }}
+        >
+          {['all', 1, 2, 3, 4, 5, 6, 7, 8, 9].map((gen) => (
+            <button
+              key={gen}
+              onClick={() => setSelectedGen(gen)}
+              style={{
+                padding: '6px 10px',
+                background: selectedGen === gen ? '#fff' : '#1a1a1a',
+                color: selectedGen === gen ? '#0f0f0f' : '#f0f0f0',
+                border: '1px solid #333',
+                borderRadius: '4px',
+                fontSize: '12px',
+                fontWeight: selectedGen === gen ? 700 : 400,
+                cursor: 'pointer',
+              }}
+            >
+              {gen === 'all' ? 'All' : `Gen ${gen}`}
+            </button>
+          ))}
+        </div>
+
+        {filteredLeaderboard.length === 0 ? (
           <div
             style={{
               background: '#1a1a1a',
@@ -75,7 +127,9 @@ export default function Results() {
               color: '#888',
             }}
           >
-            <p style={{ marginBottom: '12px' }}>No votes yet — be the first!</p>
+            <p style={{ marginBottom: '12px' }}>
+              {leaderboard.length === 0 ? 'No votes yet — be the first!' : 'No votes for this generation yet.'}
+            </p>
             <Link to="/dex" style={{ color: '#fff' }}>
               Go to the Dex
             </Link>
@@ -91,7 +145,7 @@ export default function Results() {
               gap: '8px',
             }}
           >
-            {leaderboard.map((entry) => (
+            {filteredLeaderboard.map((entry) => (
               <li
                 key={entry.pokemonId}
                 style={{
