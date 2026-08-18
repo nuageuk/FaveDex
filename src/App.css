@@ -18,6 +18,28 @@ body {
   gap: 16px;
 }
 
+@keyframes fadeUpIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.landing-fade-in {
+  opacity: 0;
+  animation: fadeUpIn 0.6s ease forwards;
+}
+
+.landing-fade-in:nth-child(1) { animation-delay: 0s; }
+.landing-fade-in:nth-child(2) { animation-delay: 0.1s; }
+.landing-fade-in:nth-child(3) { animation-delay: 0.2s; }
+.landing-fade-in:nth-child(4) { animation-delay: 0.3s; }
+.landing-fade-in:nth-child(5) { animation-delay: 0.4s; }
+
 .logo {
   font-size: 48px;
   font-weight: 700;
