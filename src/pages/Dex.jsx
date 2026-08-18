@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Filter } from 'bad-words'
 import { reverseGeocode } from '../utils/geo'
+import { hasVotedToday, setVotedCookie } from '../utils/voteLimit'
 
 const profanityFilter = new Filter()
 
@@ -62,6 +63,16 @@ function getGeneration(id) {
   return index === -1 ? null : index + 1
 }
 
+function getTimeUntilMidnight() {
+  const now = new Date()
+  const midnight = new Date(now)
+  midnight.setHours(24, 0, 0, 0)
+  const diffMs = midnight - now
+  const hours = Math.floor(diffMs / (1000 * 60 * 60))
+  const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
+  return `${hours}h ${minutes}m`
+}
+
 export default function Dex() {
   const [pokemon, setPokemon] = useState([])
   const [loading, setLoading] = useState(true)
@@ -79,6 +90,7 @@ export default function Dex() {
   })
   const [confirmSpriteError, setConfirmSpriteError] = useState(false)
   const [showLocationPrompt, setShowLocationPrompt] = useState(false)
+  const [votedToday, setVotedToday] = useState(() => hasVotedToday())
   const [username, setUsername] = useState('')
   const [reason, setReason] = useState('')
   const [formError, setFormError] = useState(null)
@@ -285,6 +297,8 @@ export default function Dex() {
       reason: cleanReason.length > 0 ? cleanReason : null,
     }
     localStorage.setItem(VOTE_KEY, JSON.stringify(newVote))
+    setVotedCookie()
+    setVotedToday(true)
     setVote(newVote)
     setShowLocationPrompt(false)
   }
@@ -371,6 +385,42 @@ export default function Dex() {
           <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{capitalize(vote.pokemonName)}</div>
           <div style={{ fontSize: '13px', color: '#888' }}>Generation {vote.generation}</div>
           <div style={{ fontSize: '13px', color: '#888' }}>Thanks for voting!</div>
+          <Link to="/results" style={{ marginTop: '8px', fontSize: '13px', color: '#fff' }}>
+            View results
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  if (votedToday) {
+    return (
+      <div
+        className="dex-page"
+        style={{
+          color: '#f0f0f0',
+          minHeight: '100vh',
+          padding: '24px',
+          fontFamily: 'system-ui, sans-serif',
+        }}
+      >
+        <div
+          style={{
+            width: '400px',
+            background: '#1a1a1a',
+            border: '1px solid #333',
+            borderRadius: '4px',
+            padding: '16px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+        >
+          <div style={{ fontSize: '16px', fontWeight: 'bold' }}>You&apos;ve already voted today</div>
+          <div style={{ fontSize: '13px', color: '#888', textAlign: 'center' }}>
+            Come back in {getTimeUntilMidnight()} to vote again
+          </div>
           <Link to="/results" style={{ marginTop: '8px', fontSize: '13px', color: '#fff' }}>
             View results
           </Link>
