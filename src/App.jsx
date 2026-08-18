@@ -4,10 +4,9 @@ import Landing from './pages/Landing.jsx'
 import Dex from './pages/Dex.jsx'
 import Results from './pages/Results.jsx'
 import Pokemon from './pages/Pokemon.jsx'
+import NotFound from './pages/NotFound.jsx'
 import Navbar from './components/Navbar.jsx'
 import { getStoredTheme, setStoredTheme } from './utils/theme'
-
-const BACKGROUND_VIDEO_ROUTES = ['/', '/dex', '/results']
 
 function BackgroundVideo() {
   const videoRef = useRef(null)
@@ -76,12 +75,9 @@ export default function App() {
     setTheme((current) => (current === 'video' ? 'dark' : 'video'))
   }
 
-  const showBackgroundVideo =
-    BACKGROUND_VIDEO_ROUTES.includes(location.pathname) || location.pathname.startsWith('/pokemon/')
-
   return (
     <div className={`theme-${theme}`}>
-      {showBackgroundVideo && <BackgroundVideo />}
+      <BackgroundVideo />
       <Navbar theme={theme} onToggleTheme={toggleTheme} />
       <div className="app-content" key={location.pathname}>
         <Routes>
@@ -89,6 +85,7 @@ export default function App() {
           <Route path="/dex" element={<Dex />} />
           <Route path="/results" element={<Results />} />
           <Route path="/pokemon/:id" element={<Pokemon />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
     </div>

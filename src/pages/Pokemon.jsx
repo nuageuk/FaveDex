@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useParams, useLocation, Link } from 'react-router-dom'
+import { useParams, useLocation, useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { getGeneration } from './Dex'
 import { aggregateVotes, computeRanks, formatRank } from './Results'
@@ -38,19 +38,29 @@ function spriteUrl(id, useFallback) {
 export default function Pokemon() {
   const { id } = useParams()
   const location = useLocation()
+  const navigate = useNavigate()
   const backHref = location.state?.from ?? '/results'
   const pokemonId = Number(id)
+  const isValidId = Number.isInteger(pokemonId) && pokemonId >= 1 && pokemonId <= 1025
   const [votes, setVotes] = useState([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
   const [spriteError, setSpriteError] = useState(false)
   const [overallRank, setOverallRank] = useState(null)
+  const [apiName, setApiName] = useState(null)
+  const [apiNameLoading, setApiNameLoading] = useState(true)
   const spriteTimeoutRef = useRef(null)
 
   useEffect(() => {
+    if (!isValidId) {
+      navigate('/404', { replace: true })
+    }
+  }, [isValidId, navigate])
+
+  useEffect(() => {
+    if (!isValidId) return
+
     let cancelled = false
     setLoading(true)
-    setError(null)
 
     supabase
       .from('votes')
@@ -60,8 +70,7 @@ export default function Pokemon() {
       .then(({ data, error: fetchError }) => {
         if (cancelled) return
         if (fetchError) {
-          setError(fetchError.message)
-          setLoading(false)
+          navigate('/404', { replace: true })
           return
         }
         setVotes(data ?? [])
@@ -71,9 +80,36 @@ export default function Pokemon() {
     return () => {
       cancelled = true
     }
-  }, [pokemonId])
+  }, [pokemonId, isValidId, navigate])
 
   useEffect(() => {
+    if (!isValidId) return
+
+    let cancelled = false
+
+    fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonId}`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`Request failed with status ${res.status}`)
+        return res.json()
+      })
+      .then((data) => {
+        if (cancelled) return
+        setApiName(data.name)
+        setApiNameLoading(false)
+      })
+      .catch(() => {
+        if (cancelled) return
+        setApiNameLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [pokemonId, isValidId])
+
+  useEffect(() => {
+    if (!isValidId) return
+
     let cancelled = false
 
     supabase
@@ -90,10 +126,10 @@ export default function Pokemon() {
     return () => {
       cancelled = true
     }
-  }, [pokemonId])
+  }, [pokemonId, isValidId])
 
   useEffect(() => {
-    if (pokemonId > 649 || spriteError) return
+    if (!isValidId || pokemonId > 649 || spriteError) return
 
     spriteTimeoutRef.current = setTimeout(() => {
       setSpriteError(true)
@@ -105,12 +141,15 @@ export default function Pokemon() {
         spriteTimeoutRef.current = null
       }
     }
-  }, [pokemonId, spriteError])
+  }, [isValidId, pokemonId, spriteError])
 
+  if (!isValidId) return null
   if (loading) return <div style={{ color: '#f0f0f0' }}>Loading...</div>
-  if (error) return <div style={{ color: '#f0f0f0' }}>Error: {error}</div>
 
-  const pokemonName = votes.find((v) => v.pokemon_name)?.pokemon_name ?? null
+  const votedName = votes.find((v) => v.pokemon_name)?.pokemon_name ?? null
+  if (!votedName && apiNameLoading) return <div style={{ color: '#f0f0f0' }}>Loading...</div>
+
+  const pokemonName = votedName ?? apiName
   const generation = getGeneration(pokemonId)
   const reasons = votes.filter((v) => v.reason && v.reason.trim().length > 0)
 
