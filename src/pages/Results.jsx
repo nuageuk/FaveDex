@@ -36,6 +36,14 @@ function formatRank(rank) {
   }
 }
 
+function computeRanks(entries) {
+  const ranks = []
+  entries.forEach((entry, index) => {
+    ranks.push(index > 0 && entry.count === entries[index - 1].count ? ranks[index - 1] : index + 1)
+  })
+  return ranks
+}
+
 function loadVotes() {
   try {
     const raw = localStorage.getItem(VOTE_KEY)
@@ -75,6 +83,7 @@ export default function Results() {
     selectedGen === 'all'
       ? leaderboard
       : leaderboard.filter((entry) => getGeneration(entry.pokemonId) === selectedGen)
+  const ranks = computeRanks(filteredLeaderboard)
 
   return (
     <div
@@ -136,71 +145,74 @@ export default function Results() {
               gap: '8px',
             }}
           >
-            {filteredLeaderboard.map((entry, index) => (
-              <li
-                key={entry.pokemonId}
-                className="leaderboard-item"
-                style={{
-                  boxSizing: 'border-box',
-                  width: '100%',
-                  overflow: 'hidden',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  background: 'var(--panel-bg)',
-                  backdropFilter: 'var(--panel-blur)',
-                  WebkitBackdropFilter: 'var(--panel-blur)',
-                  border: '1px solid var(--panel-border-color)',
-                  borderRadius: '12px',
-                }}
-              >
-                <div
+            {filteredLeaderboard.map((entry, index) => {
+              const rank = ranks[index]
+              return (
+                <li
+                  key={entry.pokemonId}
+                  className="leaderboard-item"
                   style={{
-                    width: '28px',
-                    flexShrink: 0,
-                    textAlign: 'center',
-                    fontSize: index < 3 ? '18px' : '13px',
-                    fontWeight: 'bold',
-                    color: index < 3 ? undefined : '#888',
+                    boxSizing: 'border-box',
+                    width: '100%',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    background: 'var(--panel-bg)',
+                    backdropFilter: 'var(--panel-blur)',
+                    WebkitBackdropFilter: 'var(--panel-blur)',
+                    border: '1px solid var(--panel-border-color)',
+                    borderRadius: '12px',
                   }}
                 >
-                  {formatRank(index + 1)}
-                </div>
-                <img
-                  className="leaderboard-thumb"
-                  src={staticSpriteUrl(entry.pokemonId)}
-                  alt={entry.pokemonName}
-                  style={{ width: '48px', height: '48px', flexShrink: 0, imageRendering: 'pixelated' }}
-                />
-                <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
                   <div
                     style={{
-                      fontSize: '14px',
+                      width: '28px',
+                      flexShrink: 0,
+                      textAlign: 'center',
+                      fontSize: rank <= 3 ? '18px' : '13px',
                       fontWeight: 'bold',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
+                      color: rank <= 3 ? undefined : '#888',
                     }}
                   >
-                    {capitalize(entry.pokemonName)}
+                    {formatRank(rank)}
                   </div>
-                  <div
-                    style={{
-                      fontSize: '12px',
-                      color: '#888',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                  >
-                    {formatDexNumber(entry.pokemonId)} · Generation {entry.generation}
+                  <img
+                    className="leaderboard-thumb"
+                    src={staticSpriteUrl(entry.pokemonId)}
+                    alt={entry.pokemonName}
+                    style={{ width: '48px', height: '48px', flexShrink: 0, imageRendering: 'pixelated' }}
+                  />
+                  <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+                    <div
+                      style={{
+                        fontSize: '14px',
+                        fontWeight: 'bold',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    >
+                      {capitalize(entry.pokemonName)}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: '12px',
+                        color: '#888',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    >
+                      {formatDexNumber(entry.pokemonId)} · Generation {entry.generation}
+                    </div>
                   </div>
-                </div>
-                <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff', flexShrink: 0, whiteSpace: 'nowrap' }}>
-                  {entry.count} {entry.count === 1 ? 'vote' : 'votes'}
-                </div>
-              </li>
-            ))}
+                  <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                    {entry.count} {entry.count === 1 ? 'vote' : 'votes'}
+                  </div>
+                </li>
+              )
+            })}
           </ul>
         )}
       </div>
