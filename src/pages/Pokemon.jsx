@@ -105,7 +105,7 @@ export default function Pokemon() {
         fontFamily: 'system-ui, sans-serif',
       }}
     >
-      <div style={{ width: '100%', maxWidth: '480px' }}>
+      <div style={{ width: '100%', maxWidth: '480px', display: 'flex', flexDirection: 'column' }}>
         <Link
           to="/results"
           style={{
@@ -121,6 +121,8 @@ export default function Pokemon() {
 
         <div
           style={{
+            width: '280px',
+            alignSelf: 'center',
             background: 'var(--panel-bg)',
             backdropFilter: 'var(--panel-blur)',
             WebkitBackdropFilter: 'var(--panel-blur)',
@@ -145,6 +147,7 @@ export default function Pokemon() {
               }
             }}
             alt={pokemonName ?? `Pokémon ${formatDexNumber(pokemonId)}`}
+            style={{ width: '180px', height: '180px', objectFit: 'contain' }}
           />
           <div style={{ fontSize: '18px', fontWeight: 'bold' }}>
             {pokemonName ? capitalize(pokemonName) : `Pokémon ${formatDexNumber(pokemonId)}`}
