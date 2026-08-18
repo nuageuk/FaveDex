@@ -287,7 +287,8 @@ export default function Dex() {
       pokemon_id: pokemonId,
       pokemon_name: pokemonName,
       generation,
-      location,
+      city: location?.city ?? null,
+      country: location?.country ?? null,
       username: cleanUsername.length > 0 ? cleanUsername : null,
       reason: cleanReason.length > 0 ? cleanReason : null,
     })
@@ -337,7 +338,7 @@ export default function Dex() {
         } catch {
           // ignore geocoding failures, still record raw coords
         }
-        finalizeVote({ lat, lng, city, country })
+        finalizeVote({ city, country })
       },
       () => {
         finalizeVote(null)
