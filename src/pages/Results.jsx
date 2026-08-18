@@ -204,8 +204,7 @@ export default function Results() {
     let cancelled = false
 
     supabase
-      .from('votes')
-      .select('pokemon_id, pokemon_name, generation')
+      .rpc('get_leaderboard')
       .then(({ data, error: fetchError }) => {
         if (cancelled) return
         if (fetchError) {
@@ -213,7 +212,13 @@ export default function Results() {
           setLoading(false)
           return
         }
-        setLeaderboard(aggregateVotes(data ?? []))
+        const leaderboard = (data ?? []).map((row) => ({
+          pokemonId: row.pokemon_id,
+          pokemonName: row.pokemon_name,
+          generation: row.generation,
+          count: Number(row.count),
+        }))
+        setLeaderboard(leaderboard)
         setLoading(false)
       })
 
