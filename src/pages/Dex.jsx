@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { Filter } from 'bad-words'
 import { reverseGeocode } from '../utils/geo'
 import { hasVotedToday, setVotedCookie } from '../utils/voteLimit'
-import { supabase } from '../lib/supabase'
 
 const profanityFilter = new Filter()
 
@@ -330,19 +329,34 @@ export default function Dex() {
     const pokemonName = selected.name
     const generation = getGeneration(pokemonId)
 
-    const { error: insertError } = await supabase.from('votes').insert({
-      pokemon_id: pokemonId,
-      pokemon_name: pokemonName,
-      generation,
-      city: location?.city ?? null,
-      country: location?.country ?? null,
-      username: cleanUsername.length > 0 ? cleanUsername : null,
-      reason: cleanReason.length > 0 ? cleanReason : null,
-    })
-
-    if (insertError) {
+    let response
+    try {
+      response = await fetch('/api/vote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pokemon_id: pokemonId,
+          pokemon_name: pokemonName,
+          generation,
+          city: location?.city ?? null,
+          country: location?.country ?? null,
+          username: cleanUsername.length > 0 ? cleanUsername : null,
+          reason: cleanReason.length > 0 ? cleanReason : null,
+        }),
+      })
+    } catch {
       setShowLocationPrompt(false)
       setFormError('Something went wrong submitting your vote. Please try again.')
+      return
+    }
+
+    if (!response.ok) {
+      setShowLocationPrompt(false)
+      setFormError(
+        response.status === 429
+          ? 'You have already voted today.'
+          : 'Something went wrong submitting your vote. Please try again.'
+      )
       return
     }
 
