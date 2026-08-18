@@ -35,6 +35,11 @@ function spriteUrl(id, useFallback) {
     : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${id}.gif`
 }
 
+function extractIdFromUrl(url) {
+  const segments = url.split('/').filter(Boolean)
+  return Number(segments[segments.length - 1])
+}
+
 export default function Pokemon() {
   const { id } = useParams()
   const location = useLocation()
@@ -48,6 +53,7 @@ export default function Pokemon() {
   const [overallRank, setOverallRank] = useState(null)
   const [apiName, setApiName] = useState(null)
   const [apiNameLoading, setApiNameLoading] = useState(true)
+  const [baseDexNumber, setBaseDexNumber] = useState(null)
   const spriteTimeoutRef = useRef(null)
 
   useEffect(() => {
@@ -64,7 +70,7 @@ export default function Pokemon() {
 
     supabase
       .from('votes')
-      .select('id, username, reason, city, country, created_at, pokemon_name')
+      .select('id, username, reason, city, country, created_at, pokemon_name, generation')
       .eq('pokemon_id', pokemonId)
       .order('created_at', { ascending: false })
       .then(({ data, error: fetchError }) => {
@@ -98,6 +104,9 @@ export default function Pokemon() {
           if (cancelled) return
           setApiName(data.name)
           setApiNameLoading(false)
+          if (pokemonId > 1025) {
+            setBaseDexNumber(extractIdFromUrl(data.species.url))
+          }
         })
       })
       .catch(() => {
@@ -153,7 +162,9 @@ export default function Pokemon() {
   if (!votedName && apiNameLoading) return <div style={{ color: '#f0f0f0' }}>Loading...</div>
 
   const pokemonName = votedName ?? apiName
-  const generation = getGeneration(pokemonId)
+  const votedGeneration = votes.find((v) => typeof v.generation === 'number')?.generation ?? null
+  const generation = votedGeneration ?? getGeneration(pokemonId)
+  const displayDexNumber = pokemonId > 1025 && baseDexNumber !== null ? baseDexNumber : pokemonId
   const reasons = votes.filter((v) => v.reason && v.reason.trim().length > 0)
 
   return (
@@ -199,14 +210,14 @@ export default function Pokemon() {
                 spriteTimeoutRef.current = null
               }
             }}
-            alt={pokemonName ?? `Pokémon ${formatDexNumber(pokemonId)}`}
+            alt={pokemonName ?? `Pokémon ${formatDexNumber(displayDexNumber)}`}
             style={{ width: '180px', height: '180px', objectFit: 'contain' }}
           />
           <div style={{ fontSize: '18px', fontWeight: 'bold' }}>
-            {pokemonName ? capitalize(pokemonName) : `Pokémon ${formatDexNumber(pokemonId)}`}
+            {pokemonName ? capitalize(pokemonName) : `Pokémon ${formatDexNumber(displayDexNumber)}`}
           </div>
           <div style={{ fontSize: '13px', color: '#888' }}>
-            {formatDexNumber(pokemonId)} · Generation {generation}
+            {formatDexNumber(displayDexNumber)} · Generation {generation}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             {overallRank !== null && (
