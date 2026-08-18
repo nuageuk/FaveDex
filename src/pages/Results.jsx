@@ -177,6 +177,7 @@ export default function Results() {
                 }}
               >
                 <ul
+                  className="gen-filter-list"
                   style={{
                     listStyle: 'none',
                     margin: 0,

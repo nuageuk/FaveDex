@@ -123,6 +123,14 @@ p {
   max-width: 100%;
 }
 
+.gen-filter-list {
+  scrollbar-width: none;
+}
+
+.gen-filter-list::-webkit-scrollbar {
+  display: none;
+}
+
 .leaderboard-empty {
   padding: 24px;
   max-width: 100%;
