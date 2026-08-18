@@ -162,23 +162,16 @@ export default function Pokemon() {
         fontFamily: 'system-ui, sans-serif',
       }}
     >
-      <div style={{ width: '100%', maxWidth: '480px', display: 'flex', flexDirection: 'column' }}>
-        <Link
-          to={backHref}
-          style={{
-            display: 'inline-block',
-            marginBottom: '16px',
-            fontSize: '13px',
-            color: '#888',
-            textDecoration: 'none',
-          }}
-        >
-          ← Back to leaderboard
-        </Link>
+      <Link to={backHref} className="back-link">
+        ← Back to leaderboard
+      </Link>
 
+      <div style={{ width: '100%', maxWidth: '480px', display: 'flex', flexDirection: 'column' }}>
         <div
           style={{
-            width: '280px',
+            width: '320px',
+            height: 'auto',
+            boxSizing: 'border-box',
             alignSelf: 'center',
             background: 'var(--panel-bg)',
             backdropFilter: 'var(--panel-blur)',
@@ -268,9 +261,11 @@ export default function Pokemon() {
                   style={{
                     boxSizing: 'border-box',
                     width: '100%',
+                    minHeight: '72px',
                     overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'column',
+                    justifyContent: 'center',
                     gap: '6px',
                     background: 'var(--panel-bg)',
                     backdropFilter: 'var(--panel-blur)',

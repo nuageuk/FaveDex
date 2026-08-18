@@ -150,6 +150,16 @@ p {
   max-width: 100%;
 }
 
+.back-link {
+  position: fixed;
+  top: 24px;
+  left: calc(200px + 24px);
+  z-index: 50;
+  font-size: 13px;
+  color: #888;
+  text-decoration: none;
+}
+
 .gen-filter-list {
   scrollbar-width: none;
 }
@@ -396,6 +406,11 @@ p {
 
   .dex-page {
     padding: 16px;
+  }
+
+  .back-link {
+    top: 72px;
+    left: 16px;
   }
 
   .leaderboard-container {
