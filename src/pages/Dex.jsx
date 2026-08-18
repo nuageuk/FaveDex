@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Filter } from 'bad-words'
 import { reverseGeocode } from '../utils/geo'
 import { hasVotedToday, setVotedCookie } from '../utils/voteLimit'
+import { supabase } from '../lib/supabase'
 
 const profanityFilter = new Filter()
 
@@ -18,8 +19,6 @@ function capitalize(name) {
 function formatDexNumber(n) {
   return `#${String(n).padStart(3, '0')}`
 }
-
-const VOTE_KEY = 'favedex_vote'
 
 function spriteUrl(id, useFallback) {
   return useFallback
@@ -80,14 +79,7 @@ export default function Dex() {
   const [query, setQuery] = useState('')
   const [isOpen, setIsOpen] = useState(false)
   const [selected, setSelected] = useState(null)
-  const [vote, setVote] = useState(() => {
-    try {
-      const raw = localStorage.getItem(VOTE_KEY)
-      return raw ? JSON.parse(raw) : null
-    } catch {
-      return null
-    }
-  })
+  const [vote, setVote] = useState(null)
   const [confirmSpriteError, setConfirmSpriteError] = useState(false)
   const [showLocationPrompt, setShowLocationPrompt] = useState(false)
   const [votedToday, setVotedToday] = useState(() => hasVotedToday())
@@ -283,23 +275,32 @@ export default function Dex() {
     }
   }, [selected])
 
-  function finalizeVote(location) {
+  async function finalizeVote(location) {
     if (!selected) return
     const cleanUsername = stripHtmlTags(username.trim())
     const cleanReason = stripHtmlTags(reason.trim())
-    const newVote = {
-      pokemonId: selected.dexNumber,
-      pokemonName: selected.name,
-      generation: getGeneration(selected.dexNumber),
-      timestamp: Date.now(),
+    const pokemonId = selected.dexNumber
+    const pokemonName = selected.name
+    const generation = getGeneration(pokemonId)
+
+    const { error: insertError } = await supabase.from('votes').insert({
+      pokemon_id: pokemonId,
+      pokemon_name: pokemonName,
+      generation,
       location,
       username: cleanUsername.length > 0 ? cleanUsername : null,
       reason: cleanReason.length > 0 ? cleanReason : null,
+    })
+
+    if (insertError) {
+      setShowLocationPrompt(false)
+      setFormError('Something went wrong submitting your vote. Please try again.')
+      return
     }
-    localStorage.setItem(VOTE_KEY, JSON.stringify(newVote))
+
     setVotedCookie()
     setVotedToday(true)
-    setVote(newVote)
+    setVote({ pokemonId, pokemonName, generation })
     setShowLocationPrompt(false)
   }
 

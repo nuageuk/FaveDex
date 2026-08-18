@@ -1,9 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import '../App.css'
 import { getGeneration } from './Dex'
-
-const VOTE_KEY = 'favedex_vote'
+import { supabase } from '../lib/supabase'
 
 function capitalize(name) {
   if (typeof name !== 'string' || name.length === 0) return ''
@@ -44,30 +43,19 @@ function computeRanks(entries) {
   return ranks
 }
 
-function loadVotes() {
-  try {
-    const raw = localStorage.getItem(VOTE_KEY)
-    if (!raw) return []
-    const parsed = JSON.parse(raw)
-    return Array.isArray(parsed) ? parsed : [parsed]
-  } catch {
-    return []
-  }
-}
-
 const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 function aggregateVotes(votes) {
   const byPokemon = new Map()
   votes.forEach((vote) => {
-    if (!vote || typeof vote.pokemonId !== 'number') return
-    const existing = byPokemon.get(vote.pokemonId)
+    if (!vote || typeof vote.pokemon_id !== 'number') return
+    const existing = byPokemon.get(vote.pokemon_id)
     if (existing) {
       existing.count += 1
     } else {
-      byPokemon.set(vote.pokemonId, {
-        pokemonId: vote.pokemonId,
-        pokemonName: vote.pokemonName,
+      byPokemon.set(vote.pokemon_id, {
+        pokemonId: vote.pokemon_id,
+        pokemonName: vote.pokemon_name,
         generation: vote.generation,
         count: 1,
       })
@@ -78,12 +66,40 @@ function aggregateVotes(votes) {
 
 export default function Results() {
   const [selectedGen, setSelectedGen] = useState('all')
-  const leaderboard = aggregateVotes(loadVotes())
+  const [leaderboard, setLeaderboard] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    supabase
+      .from('votes')
+      .select('pokemon_id, pokemon_name, generation')
+      .then(({ data, error: fetchError }) => {
+        if (cancelled) return
+        if (fetchError) {
+          setError(fetchError.message)
+          setLoading(false)
+          return
+        }
+        setLeaderboard(aggregateVotes(data ?? []))
+        setLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   const filteredLeaderboard =
     selectedGen === 'all'
       ? leaderboard
       : leaderboard.filter((entry) => getGeneration(entry.pokemonId) === selectedGen)
   const ranks = computeRanks(filteredLeaderboard)
+
+  if (loading) return <div style={{ color: '#f0f0f0' }}>Loading...</div>
+  if (error) return <div style={{ color: '#f0f0f0' }}>Error: {error}</div>
 
   return (
     <div
