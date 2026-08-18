@@ -140,6 +140,67 @@ function getTimeUntilMidnight() {
   return `${hours}h ${minutes}m`
 }
 
+function ComboboxRow({ p, onSelect, baseId, onNeedBaseId }) {
+  const rowRef = useRef(null)
+
+  useEffect(() => {
+    if (p.dexNumber <= 1025 || baseId !== undefined) return
+    const el = rowRef.current
+    if (!el) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          onNeedBaseId(p.dexNumber)
+        }
+      },
+      { root: el.closest('ul'), threshold: 0.1 }
+    )
+    observer.observe(el)
+
+    return () => observer.disconnect()
+  }, [p.dexNumber, baseId, onNeedBaseId])
+
+  const displayDexNumber = p.dexNumber > 1025 ? (baseId ?? p.dexNumber) : p.dexNumber
+
+  return (
+    <li
+      ref={rowRef}
+      onClick={() => onSelect(p)}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        padding: '6px 12px',
+        cursor: 'pointer',
+        fontSize: '14px',
+        color: '#f0f0f0',
+      }}
+    >
+      <img
+        src={`/icons/${p.dexNumber}.png`}
+        alt=""
+        onError={(e) => {
+          const fallback = spriteUrl(p.dexNumber, true)
+          if (e.target.src !== fallback) {
+            e.target.src = fallback
+          }
+        }}
+        style={{
+          width: '32px',
+          height: '32px',
+          objectFit: 'contain',
+          imageRendering: 'pixelated',
+          flexShrink: 0,
+        }}
+      />
+      <span>
+        {formatDexNumber(displayDexNumber)} {p.displayName}
+      </span>
+    </li>
+  )
+}
+
 export default function Dex() {
   const [pokemon, setPokemon] = useState([])
   const [loading, setLoading] = useState(true)
@@ -155,6 +216,7 @@ export default function Dex() {
   const [reason, setReason] = useState('')
   const [formError, setFormError] = useState(null)
   const [formInfo, setFormInfo] = useState(null)
+  const [baseIdMap, setBaseIdMap] = useState({})
 
   const containerRef = useRef(null)
   const imgRef = useRef(null)
@@ -167,6 +229,25 @@ export default function Dex() {
   const prevDexNumberRef = useRef(null)
   const spriteLoadTimeoutRef = useRef(null)
   const confirmSpriteTimeoutRef = useRef(null)
+  const baseIdFetchingRef = useRef(new Set())
+
+  function resolveBaseId(dexNumber) {
+    if (baseIdFetchingRef.current.has(dexNumber)) return
+    baseIdFetchingRef.current.add(dexNumber)
+
+    fetch(`https://pokeapi.co/api/v2/pokemon/${dexNumber}`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`Request failed with status ${res.status}`)
+        return res.json()
+      })
+      .then((data) => {
+        const baseId = extractIdFromUrl(data.species.url)
+        setBaseIdMap((prev) => ({ ...prev, [dexNumber]: baseId }))
+      })
+      .catch(() => {
+        baseIdFetchingRef.current.delete(dexNumber)
+      })
+  }
 
   useEffect(() => {
     fetch('https://pokeapi.co/api/v2/pokemon?limit=1351')
@@ -710,40 +791,13 @@ export default function Dex() {
           >
             {filtered.length > 0 ? (
               filtered.map((p) => (
-                <li
+                <ComboboxRow
                   key={p.name}
-                  onClick={() => handleSelect(p)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '6px 12px',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    color: '#f0f0f0',
-                  }}
-                >
-                  <img
-                    src={`/icons/${p.dexNumber}.png`}
-                    alt=""
-                    onError={(e) => {
-                      const fallback = spriteUrl(p.dexNumber, true)
-                      if (e.target.src !== fallback) {
-                        e.target.src = fallback
-                      }
-                    }}
-                    style={{
-                      width: '32px',
-                      height: '32px',
-                      objectFit: 'contain',
-                      imageRendering: 'pixelated',
-                      flexShrink: 0,
-                    }}
-                  />
-                  <span>
-                    #{p.dexNumber} {p.displayName}
-                  </span>
-                </li>
+                  p={p}
+                  onSelect={handleSelect}
+                  baseId={baseIdMap[p.dexNumber]}
+                  onNeedBaseId={resolveBaseId}
+                />
               ))
             ) : (
               <li style={{ padding: '8px 12px', fontSize: '14px', color: '#555' }}>No results</li>
