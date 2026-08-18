@@ -121,11 +121,11 @@ p {
   width: 100%;
   max-width: 220px;
   box-sizing: border-box;
-  padding: 8px 32px 8px 12px;
-  background-color: var(--panel-bg);
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.7);
   backdrop-filter: var(--panel-blur);
   -webkit-backdrop-filter: var(--panel-blur);
-  border: 1px solid var(--panel-border-color);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
   color: #f0f0f0;
   font-size: 13px;
@@ -145,7 +145,7 @@ p {
 }
 
 .gen-filter-select option {
-  background-color: #1a1a1a;
+  background: #1a1a1a;
   color: #f0f0f0;
 }
 

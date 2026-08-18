@@ -18,6 +18,24 @@ function staticSpriteUrl(id) {
   return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`
 }
 
+const RANK_MEDALS = ['🥇', '🥈', '🥉']
+
+function formatRank(rank) {
+  if (rank <= 3) return RANK_MEDALS[rank - 1]
+  const lastTwo = rank % 100
+  if (lastTwo >= 11 && lastTwo <= 13) return `${rank}th`
+  switch (rank % 10) {
+    case 1:
+      return `${rank}st`
+    case 2:
+      return `${rank}nd`
+    case 3:
+      return `${rank}rd`
+    default:
+      return `${rank}th`
+  }
+}
+
 function loadVotes() {
   try {
     const raw = localStorage.getItem(VOTE_KEY)
@@ -118,7 +136,7 @@ export default function Results() {
               gap: '8px',
             }}
           >
-            {filteredLeaderboard.map((entry) => (
+            {filteredLeaderboard.map((entry, index) => (
               <li
                 key={entry.pokemonId}
                 className="leaderboard-item"
@@ -136,6 +154,18 @@ export default function Results() {
                   borderRadius: '12px',
                 }}
               >
+                <div
+                  style={{
+                    width: '28px',
+                    flexShrink: 0,
+                    textAlign: 'center',
+                    fontSize: index < 3 ? '18px' : '13px',
+                    fontWeight: 'bold',
+                    color: index < 3 ? undefined : '#888',
+                  }}
+                >
+                  {formatRank(index + 1)}
+                </div>
                 <img
                   className="leaderboard-thumb"
                   src={staticSpriteUrl(entry.pokemonId)}
