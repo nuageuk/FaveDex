@@ -29,6 +29,8 @@ function loadVotes() {
   }
 }
 
+const GENERATIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+
 function aggregateVotes(votes) {
   const byPokemon = new Map()
   votes.forEach((vote) => {
@@ -62,53 +64,38 @@ export default function Results() {
       style={{
         color: '#f0f0f0',
         minHeight: '100vh',
-        padding: '24px',
         fontFamily: 'system-ui, sans-serif',
       }}
     >
-      <div style={{ width: '480px', maxWidth: '100%' }}>
+      <div className="leaderboard-container">
         <h1 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '16px', textAlign: 'center' }}>
           Leaderboard
         </h1>
 
-        <div
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '6px',
-            marginBottom: '16px',
-            justifyContent: 'center',
-          }}
-        >
-          {['all', 1, 2, 3, 4, 5, 6, 7, 8, 9].map((gen) => (
-            <button
-              key={gen}
-              onClick={() => setSelectedGen(gen)}
-              style={{
-                padding: '6px 10px',
-                background: selectedGen === gen ? '#fff' : '#1a1a1a',
-                color: selectedGen === gen ? '#0f0f0f' : '#f0f0f0',
-                border: '1px solid #333',
-                borderRadius: '4px',
-                fontSize: '12px',
-                fontWeight: selectedGen === gen ? 700 : 400,
-                cursor: 'pointer',
-              }}
-            >
-              {gen === 'all' ? 'All' : `Gen ${gen}`}
-            </button>
-          ))}
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+          <select
+            className="gen-filter-select"
+            value={selectedGen}
+            onChange={(e) => setSelectedGen(e.target.value === 'all' ? 'all' : Number(e.target.value))}
+          >
+            <option value="all">All</option>
+            {GENERATIONS.map((gen) => (
+              <option key={gen} value={gen}>
+                {`Gen ${gen}`}
+              </option>
+            ))}
+          </select>
         </div>
 
         {filteredLeaderboard.length === 0 ? (
           <div
+            className="leaderboard-empty"
             style={{
               background: 'var(--panel-bg)',
               backdropFilter: 'var(--panel-blur)',
               WebkitBackdropFilter: 'var(--panel-blur)',
               border: '1px solid var(--panel-border-color)',
               borderRadius: '12px',
-              padding: '24px',
               textAlign: 'center',
               color: '#888',
             }}
@@ -134,7 +121,11 @@ export default function Results() {
             {filteredLeaderboard.map((entry) => (
               <li
                 key={entry.pokemonId}
+                className="leaderboard-item"
                 style={{
+                  boxSizing: 'border-box',
+                  width: '100%',
+                  overflow: 'hidden',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '12px',
@@ -143,21 +134,39 @@ export default function Results() {
                   WebkitBackdropFilter: 'var(--panel-blur)',
                   border: '1px solid var(--panel-border-color)',
                   borderRadius: '12px',
-                  padding: '10px 12px',
                 }}
               >
                 <img
+                  className="leaderboard-thumb"
                   src={staticSpriteUrl(entry.pokemonId)}
                   alt={entry.pokemonName}
-                  style={{ width: '48px', height: '48px', imageRendering: 'pixelated' }}
+                  style={{ width: '48px', height: '48px', flexShrink: 0, imageRendering: 'pixelated' }}
                 />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '14px', fontWeight: 'bold' }}>{capitalize(entry.pokemonName)}</div>
-                  <div style={{ fontSize: '12px', color: '#888' }}>
+                <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+                  <div
+                    style={{
+                      fontSize: '14px',
+                      fontWeight: 'bold',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    {capitalize(entry.pokemonName)}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: '12px',
+                      color: '#888',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
                     {formatDexNumber(entry.pokemonId)} · Generation {entry.generation}
                   </div>
                 </div>
-                <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff' }}>
+                <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff', flexShrink: 0, whiteSpace: 'nowrap' }}>
                   {entry.count} {entry.count === 1 ? 'vote' : 'votes'}
                 </div>
               </li>

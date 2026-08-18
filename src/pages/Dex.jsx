@@ -355,13 +355,13 @@ export default function Dex() {
         style={{
           color: '#f0f0f0',
           minHeight: '100vh',
-          padding: '24px',
           fontFamily: 'system-ui, sans-serif',
         }}
       >
         <div
           style={{
-            width: '400px',
+            width: '100%',
+            maxWidth: '400px',
             background: 'var(--panel-bg)',
             backdropFilter: 'var(--panel-blur)',
             WebkitBackdropFilter: 'var(--panel-blur)',
@@ -375,14 +375,10 @@ export default function Dex() {
           }}
         >
           <img
+            className="sprite-static"
             src={spriteUrl(vote.pokemonId, vote.pokemonId > 649 || confirmSpriteError)}
             onError={() => setConfirmSpriteError(true)}
             alt={vote.pokemonName}
-            style={{
-              width: '300px',
-              height: '300px',
-              imageRendering: 'pixelated',
-            }}
           />
           <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{capitalize(vote.pokemonName)}</div>
           <div style={{ fontSize: '13px', color: '#888' }}>Generation {vote.generation}</div>
@@ -402,13 +398,13 @@ export default function Dex() {
         style={{
           color: '#f0f0f0',
           minHeight: '100vh',
-          padding: '24px',
           fontFamily: 'system-ui, sans-serif',
         }}
       >
         <div
           style={{
-            width: '400px',
+            width: '100%',
+            maxWidth: '400px',
             background: 'var(--panel-bg)',
             backdropFilter: 'var(--panel-blur)',
             WebkitBackdropFilter: 'var(--panel-blur)',
@@ -457,11 +453,10 @@ export default function Dex() {
       style={{
         color: '#f0f0f0',
         minHeight: '100vh',
-        padding: '24px',
         fontFamily: 'system-ui, sans-serif',
       }}
     >
-      <div ref={containerRef} style={{ position: 'relative', width: '280px' }}>
+      <div ref={containerRef} style={{ position: 'relative', width: '100%', maxWidth: '280px' }}>
         <button
           onClick={() => setIsOpen((open) => !open)}
           style={{
@@ -555,7 +550,8 @@ export default function Dex() {
           className="preview-fade-in"
           style={{
             marginTop: '24px',
-            width: '400px',
+            width: '100%',
+            maxWidth: '400px',
             background: 'var(--panel-bg)',
             backdropFilter: 'var(--panel-blur)',
             WebkitBackdropFilter: 'var(--panel-blur)',
@@ -568,9 +564,10 @@ export default function Dex() {
             gap: '8px',
           }}
         >
-          <div style={{ position: 'relative', width: '300px', height: '300px' }}>
+          <div className="sprite-preview-wrapper">
             <img
               ref={imgRef}
+              className="sprite-preview-layer"
               alt={selected.name}
               onError={() => {
                 const fallback = spriteUrl(selected.dexNumber, true)
@@ -578,27 +575,12 @@ export default function Dex() {
                   imgRef.current.src = fallback
                 }
               }}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '300px',
-                height: '300px',
-                imageRendering: 'pixelated',
-              }}
             />
             <canvas
               ref={canvasRef}
+              className="sprite-preview-layer"
               width={CANVAS_SIZE}
               height={CANVAS_SIZE}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '300px',
-                height: '300px',
-                imageRendering: 'pixelated',
-              }}
             />
           </div>
           <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{capitalize(selected.name)}</div>
