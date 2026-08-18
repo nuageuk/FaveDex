@@ -13,6 +13,22 @@ function formatDexNumber(n) {
   return `#${String(n).padStart(3, '0')}`
 }
 
+function formatRelativeTime(dateString) {
+  const diffMs = Date.now() - new Date(dateString).getTime()
+  const diffSeconds = Math.floor(diffMs / 1000)
+
+  if (diffSeconds < 60) return 'just now'
+
+  const diffMinutes = Math.floor(diffSeconds / 60)
+  if (diffMinutes < 60) return `${diffMinutes} minute${diffMinutes === 1 ? '' : 's'} ago`
+
+  const diffHours = Math.floor(diffMinutes / 60)
+  if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`
+
+  const diffDays = Math.floor(diffHours / 24)
+  return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`
+}
+
 function spriteUrl(id, useFallback) {
   return useFallback
     ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`
@@ -223,9 +239,21 @@ export default function Pokemon() {
                   }}
                 >
                   <div style={{ fontSize: '14px', overflowWrap: 'break-word' }}>{vote.reason}</div>
-                  <div style={{ fontSize: '12px', color: '#888' }}>
-                    — {vote.username ? vote.username : 'Anonymous'}
-                    {location ? ` · ${location}` : ''}
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'baseline',
+                      gap: '8px',
+                    }}
+                  >
+                    <div style={{ fontSize: '12px', color: '#888', overflowWrap: 'break-word' }}>
+                      — {vote.username ? vote.username : 'Anonymous'}
+                      {location ? ` · ${location}` : ''}
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#666', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                      {formatRelativeTime(vote.created_at)}
+                    </div>
                   </div>
                 </li>
               )
