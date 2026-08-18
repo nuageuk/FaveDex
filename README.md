@@ -2,7 +2,11 @@
 
 **Vote for your favourite Pokémon. See what the world picks.**
 
-[favedex.vercel.app](https://favedex.vercel.app)
+<div align="center">
+
+## [favedex.vercel.app](https://favedex.vercel.app)
+
+</div>
 
 <div align="center">
   <img src="screenshot.png" width="60%" />
