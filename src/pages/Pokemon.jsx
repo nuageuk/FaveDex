@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useParams, useLocation, useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { getGeneration } from './Dex'
-import { aggregateVotes, computeRanks, formatRank } from './Results'
+import { getFreshLeaderboardCache, setLeaderboardCache, computeRanks, formatRank } from './Results'
 
 function capitalize(name) {
   if (typeof name !== 'string' || name.length === 0) return ''
@@ -122,14 +122,27 @@ export default function Pokemon() {
   useEffect(() => {
     if (!isValidId) return
 
+    const cached = getFreshLeaderboardCache()
+    if (cached) {
+      const ranks = computeRanks(cached)
+      const index = cached.findIndex((entry) => entry.pokemonId === pokemonId)
+      setOverallRank(index === -1 ? null : ranks[index])
+      return
+    }
+
     let cancelled = false
 
     supabase
-      .from('votes')
-      .select('pokemon_id, pokemon_name, generation')
+      .rpc('get_leaderboard')
       .then(({ data, error: fetchError }) => {
         if (cancelled || fetchError) return
-        const leaderboard = aggregateVotes(data ?? [])
+        const leaderboard = (data ?? []).map((row) => ({
+          pokemonId: row.pokemon_id,
+          pokemonName: row.pokemon_name,
+          generation: row.generation,
+          count: Number(row.count),
+        }))
+        setLeaderboardCache(leaderboard)
         const ranks = computeRanks(leaderboard)
         const index = leaderboard.findIndex((entry) => entry.pokemonId === pokemonId)
         setOverallRank(index === -1 ? null : ranks[index])

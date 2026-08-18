@@ -24,10 +24,14 @@ function extractIdFromUrl(url) {
 const LEADERBOARD_CACHE_TTL_MS = 60000
 let leaderboardCache = null
 
-function getFreshLeaderboardCache() {
+export function getFreshLeaderboardCache() {
   if (!leaderboardCache) return null
   if (Date.now() - leaderboardCache.timestamp >= LEADERBOARD_CACHE_TTL_MS) return null
   return leaderboardCache.data
+}
+
+export function setLeaderboardCache(data) {
+  leaderboardCache = { data, timestamp: Date.now() }
 }
 
 const RANK_MEDALS = ['🥇', '🥈', '🥉']
@@ -61,26 +65,6 @@ const GEN_OPTIONS = ['all', ...GENERATIONS]
 
 function genLabel(gen) {
   return gen === 'all' ? 'All' : `Gen ${gen}`
-}
-
-export function aggregateVotes(votes) {
-  const byPokemon = new Map()
-  votes.forEach((vote) => {
-    if (!vote || typeof vote.pokemon_id !== 'number') return
-    const key = `${vote.pokemon_id}-${vote.pokemon_name}`
-    const existing = byPokemon.get(key)
-    if (existing) {
-      existing.count += 1
-    } else {
-      byPokemon.set(key, {
-        pokemonId: vote.pokemon_id,
-        pokemonName: vote.pokemon_name,
-        generation: vote.generation,
-        count: 1,
-      })
-    }
-  })
-  return Array.from(byPokemon.values()).sort((a, b) => b.count - a.count)
 }
 
 function LeaderboardRow({ entry, rank, currentUrl, baseId, onNeedBaseId }) {
@@ -234,7 +218,7 @@ export default function Results() {
           generation: row.generation,
           count: Number(row.count),
         }))
-        leaderboardCache = { data: mapped, timestamp: Date.now() }
+        setLeaderboardCache(mapped)
         setLeaderboard(mapped)
         setLoading(false)
       })
