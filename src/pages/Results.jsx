@@ -54,11 +54,12 @@ export function aggregateVotes(votes) {
   const byPokemon = new Map()
   votes.forEach((vote) => {
     if (!vote || typeof vote.pokemon_id !== 'number') return
-    const existing = byPokemon.get(vote.pokemon_id)
+    const key = `${vote.pokemon_id}-${vote.pokemon_name}`
+    const existing = byPokemon.get(key)
     if (existing) {
       existing.count += 1
     } else {
-      byPokemon.set(vote.pokemon_id, {
+      byPokemon.set(key, {
         pokemonId: vote.pokemon_id,
         pokemonName: vote.pokemon_name,
         generation: vote.generation,
@@ -311,7 +312,7 @@ export default function Results() {
             {filteredLeaderboard.map((entry, index) => {
               const rank = ranks[index]
               return (
-                <li key={entry.pokemonId} style={{ listStyle: 'none' }}>
+                <li key={`${entry.pokemonId}-${entry.pokemonName}`} style={{ listStyle: 'none' }}>
                   <Link
                     to={`/pokemon/${entry.pokemonId}`}
                     state={{ from: currentUrl }}

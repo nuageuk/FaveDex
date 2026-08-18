@@ -41,7 +41,7 @@ export default function Pokemon() {
   const navigate = useNavigate()
   const backHref = location.state?.from ?? '/results'
   const pokemonId = Number(id)
-  const isValidId = Number.isInteger(pokemonId) && pokemonId >= 1 && pokemonId <= 1025
+  const isValidId = Number.isInteger(pokemonId) && pokemonId >= 1
   const [votes, setVotes] = useState([])
   const [loading, setLoading] = useState(true)
   const [spriteError, setSpriteError] = useState(false)
@@ -89,13 +89,16 @@ export default function Pokemon() {
 
     fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonId}`)
       .then((res) => {
-        if (!res.ok) throw new Error(`Request failed with status ${res.status}`)
-        return res.json()
-      })
-      .then((data) => {
         if (cancelled) return
-        setApiName(data.name)
-        setApiNameLoading(false)
+        if (!res.ok) {
+          navigate('/404', { replace: true })
+          return
+        }
+        return res.json().then((data) => {
+          if (cancelled) return
+          setApiName(data.name)
+          setApiNameLoading(false)
+        })
       })
       .catch(() => {
         if (cancelled) return
@@ -105,7 +108,7 @@ export default function Pokemon() {
     return () => {
       cancelled = true
     }
-  }, [pokemonId, isValidId])
+  }, [pokemonId, isValidId, navigate])
 
   useEffect(() => {
     if (!isValidId) return

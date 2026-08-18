@@ -15,6 +15,41 @@ function capitalize(name) {
   return name.charAt(0).toUpperCase() + name.slice(1)
 }
 
+const NAME_SUFFIX_LABELS = [
+  ['-mega-x', 'Mega X'],
+  ['-mega-y', 'Mega Y'],
+  ['-mega', 'Mega'],
+  ['-gmax', 'Gigantamax'],
+  ['-alola', 'Alolan'],
+  ['-galar', 'Galarian'],
+  ['-hisui', 'Hisuian'],
+  ['-paldea', 'Paldean'],
+  ['-primal', 'Primal'],
+  ['-origin', 'Origin'],
+  ['-therian', 'Therian'],
+]
+
+function capitalizeWords(slug) {
+  return slug
+    .split('-')
+    .filter(Boolean)
+    .map((word) => capitalize(word))
+    .join(' ')
+}
+
+function formatPokemonName(slug) {
+  const match = NAME_SUFFIX_LABELS.find(([suffix]) => slug.endsWith(suffix))
+  if (!match) return capitalizeWords(slug)
+  const [suffix, label] = match
+  const base = slug.slice(0, -suffix.length)
+  return `${capitalizeWords(base)} (${label})`
+}
+
+function extractIdFromUrl(url) {
+  const segments = url.split('/').filter(Boolean)
+  return Number(segments[segments.length - 1])
+}
+
 function formatDexNumber(n) {
   return `#${String(n).padStart(3, '0')}`
 }
@@ -61,6 +96,22 @@ export function getGeneration(id) {
   return index === -1 ? null : index + 1
 }
 
+const GENERATION_NAME_TO_NUMBER = {
+  'generation-i': 1,
+  'generation-ii': 2,
+  'generation-iii': 3,
+  'generation-iv': 4,
+  'generation-v': 5,
+  'generation-vi': 6,
+  'generation-vii': 7,
+  'generation-viii': 8,
+  'generation-ix': 9,
+}
+
+function parseGenerationName(name) {
+  return GENERATION_NAME_TO_NUMBER[name] ?? null
+}
+
 function getTimeUntilMidnight() {
   const now = new Date()
   const midnight = new Date(now)
@@ -85,6 +136,7 @@ export default function Dex() {
   const [username, setUsername] = useState('')
   const [reason, setReason] = useState('')
   const [formError, setFormError] = useState(null)
+  const [formInfo, setFormInfo] = useState(null)
 
   const containerRef = useRef(null)
   const imgRef = useRef(null)
@@ -99,7 +151,7 @@ export default function Dex() {
   const confirmSpriteTimeoutRef = useRef(null)
 
   useEffect(() => {
-    fetch('https://pokeapi.co/api/v2/pokemon?limit=1025')
+    fetch('https://pokeapi.co/api/v2/pokemon?limit=1351')
       .then((res) => {
         if (!res.ok) throw new Error(`Request failed with status ${res.status}`)
         return res.json()
@@ -307,6 +359,41 @@ export default function Dex() {
   }, [selected])
 
   useEffect(() => {
+    if (!selected || selected.dexNumber <= 1025) {
+      setFormInfo(null)
+      return
+    }
+
+    setFormInfo(null)
+    let cancelled = false
+
+    async function loadFormInfo() {
+      try {
+        const pokemonRes = await fetch(`https://pokeapi.co/api/v2/pokemon/${selected.dexNumber}`)
+        if (!pokemonRes.ok) throw new Error(`Request failed with status ${pokemonRes.status}`)
+        const pokemonData = await pokemonRes.json()
+
+        const baseId = extractIdFromUrl(pokemonData.species.url)
+        const speciesRes = await fetch(pokemonData.species.url)
+        if (!speciesRes.ok) throw new Error(`Request failed with status ${speciesRes.status}`)
+        const speciesData = await speciesRes.json()
+
+        if (cancelled) return
+        setFormInfo({ baseId, generation: parseGenerationName(speciesData.generation.name) })
+      } catch {
+        if (cancelled) return
+        setFormInfo(null)
+      }
+    }
+
+    loadFormInfo()
+
+    return () => {
+      cancelled = true
+    }
+  }, [selected])
+
+  useEffect(() => {
     if (!vote || vote.pokemonId > 649 || confirmSpriteError) return
 
     confirmSpriteTimeoutRef.current = setTimeout(() => {
@@ -326,8 +413,8 @@ export default function Dex() {
     const cleanUsername = stripHtmlTags(username.trim())
     const cleanReason = stripHtmlTags(reason.trim())
     const pokemonId = selected.dexNumber
-    const pokemonName = selected.name
-    const generation = getGeneration(pokemonId)
+    const pokemonName = formatPokemonName(selected.name)
+    const generation = pokemonId > 1025 && formInfo ? formInfo.generation : getGeneration(pokemonId)
 
     let response
     try {
@@ -449,7 +536,7 @@ export default function Dex() {
             }}
             alt={vote.pokemonName}
           />
-          <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{capitalize(vote.pokemonName)}</div>
+          <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{vote.pokemonName}</div>
           <div style={{ fontSize: '13px', color: '#888' }}>Generation {vote.generation}</div>
           <div style={{ fontSize: '13px', color: '#888' }}>Thanks for voting!</div>
           <Link to="/results" style={{ marginTop: '8px', fontSize: '13px', color: '#fff' }}>
@@ -501,10 +588,14 @@ export default function Dex() {
   if (loading) return <div style={{ color: '#f0f0f0' }}>Loading...</div>
   if (error) return <div style={{ color: '#f0f0f0' }}>Error: {error}</div>
 
-  const numbered = pokemon.map((p, i) => ({ ...p, dexNumber: i + 1 }))
+  const numbered = pokemon.map((p) => ({
+    ...p,
+    dexNumber: extractIdFromUrl(p.url),
+    displayName: formatPokemonName(p.name),
+  }))
   const filtered =
     query.length > 0
-      ? numbered.filter((p) => p.name.toLowerCase().includes(query.toLowerCase()))
+      ? numbered.filter((p) => p.displayName.toLowerCase().includes(query.toLowerCase()))
       : numbered
 
   function handleSelect(p) {
@@ -625,7 +716,7 @@ export default function Dex() {
                     }}
                   />
                   <span>
-                    #{p.dexNumber} {capitalize(p.name)}
+                    #{p.dexNumber} {p.displayName}
                   </span>
                 </li>
               ))
@@ -675,8 +766,10 @@ export default function Dex() {
               height={CANVAS_SIZE}
             />
           </div>
-          <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{capitalize(selected.name)}</div>
-          <div style={{ fontSize: '13px', color: '#888' }}>{formatDexNumber(selected.dexNumber)}</div>
+          <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{formatPokemonName(selected.name)}</div>
+          <div style={{ fontSize: '13px', color: '#888' }}>
+            {formatDexNumber(formInfo ? formInfo.baseId : selected.dexNumber)}
+          </div>
 
           {!showLocationPrompt && (
             <>
@@ -806,6 +899,7 @@ export default function Dex() {
           ) : (
             <button
               onClick={handleConfirm}
+              disabled={selected.dexNumber > 1025 && !formInfo}
               style={{
                 marginTop: '8px',
                 width: '100%',
@@ -816,10 +910,11 @@ export default function Dex() {
                 borderRadius: '4px',
                 fontSize: '14px',
                 fontWeight: 600,
-                cursor: 'pointer',
+                cursor: selected.dexNumber > 1025 && !formInfo ? 'not-allowed' : 'pointer',
+                opacity: selected.dexNumber > 1025 && !formInfo ? 0.6 : 1,
               }}
             >
-              Confirm my pick
+              {selected.dexNumber > 1025 && !formInfo ? 'Loading...' : 'Confirm my pick'}
             </button>
           )}
         </div>
