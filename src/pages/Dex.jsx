@@ -525,6 +525,26 @@ export default function Dex() {
         fontFamily: 'system-ui, sans-serif',
       }}
     >
+      {!selected && (
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+          <h1
+            style={{
+              fontSize: '28px',
+              fontWeight: 700,
+              color: '#fff',
+              letterSpacing: '-0.5px',
+              margin: 0,
+              textShadow: '0 1px 3px rgba(0, 0, 0, 0.8)',
+            }}
+          >
+            Who&apos;s your favourite?
+          </h1>
+          <p style={{ fontSize: '14px', color: '#888', margin: '8px 0 0' }}>
+            Pick a Pokémon and cast your vote.
+          </p>
+        </div>
+      )}
+
       <div ref={containerRef} style={{ position: 'relative', width: '100%', maxWidth: '280px' }}>
         <input
           type="text"
