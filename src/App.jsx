@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import Landing from './pages/Landing.jsx'
 import Dex from './pages/Dex.jsx'
@@ -10,14 +10,31 @@ import { getStoredTheme, setStoredTheme } from './utils/theme'
 const BACKGROUND_VIDEO_ROUTES = ['/', '/dex', '/results']
 
 function BackgroundVideo() {
+  const videoRef = useRef(null)
+
+  useEffect(() => {
+    function playOnTouch() {
+      videoRef.current?.play()
+      document.removeEventListener('touchstart', playOnTouch)
+    }
+
+    document.addEventListener('touchstart', playOnTouch, { once: true })
+
+    return () => {
+      document.removeEventListener('touchstart', playOnTouch)
+    }
+  }, [])
+
   return (
     <>
       <video
+        ref={videoRef}
         className="bg-video"
         autoPlay
         loop
         muted
         playsInline
+        preload="auto"
         src="/output.webm"
         style={{
           position: 'fixed',
