@@ -641,8 +641,9 @@ export default function Dex() {
           className="preview-fade-in"
           style={{
             marginTop: '24px',
-            width: '100%',
-            maxWidth: '400px',
+            width: '320px',
+            boxSizing: 'border-box',
+            overflow: 'hidden',
             background: 'var(--panel-bg)',
             backdropFilter: 'var(--panel-blur)',
             WebkitBackdropFilter: 'var(--panel-blur)',
@@ -730,14 +731,23 @@ export default function Dex() {
                     fontFamily: 'inherit',
                   }}
                 />
-                <div style={{ fontSize: '11px', color: '#555', textAlign: 'right' }}>{reason.length}/280</div>
+                <div style={{ fontSize: '11px', color: '#555', textAlign: 'right', marginBottom: '24px' }}>
+                  {reason.length}/280
+                </div>
               </div>
 
               <div
                 style={{
+                  width: '100%',
+                  maxWidth: '100%',
+                  height: 'auto',
+                  boxSizing: 'border-box',
                   fontSize: '12px',
                   color: '#ff6b6b',
                   textAlign: 'center',
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
+                  whiteSpace: 'normal',
                   visibility: formError ? 'visible' : 'hidden',
                 }}
               >
