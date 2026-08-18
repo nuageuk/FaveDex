@@ -17,6 +17,11 @@ function staticSpriteUrl(id) {
   return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`
 }
 
+function extractIdFromUrl(url) {
+  const segments = url.split('/').filter(Boolean)
+  return Number(segments[segments.length - 1])
+}
+
 const RANK_MEDALS = ['🥇', '🥈', '🥉']
 
 export function formatRank(rank) {
@@ -70,6 +75,100 @@ export function aggregateVotes(votes) {
   return Array.from(byPokemon.values()).sort((a, b) => b.count - a.count)
 }
 
+function LeaderboardRow({ entry, rank, currentUrl, baseId, onNeedBaseId }) {
+  const rowRef = useRef(null)
+
+  useEffect(() => {
+    if (entry.pokemonId <= 1025 || baseId !== undefined) return
+    const el = rowRef.current
+    if (!el) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          onNeedBaseId(entry.pokemonId)
+        }
+      },
+      { threshold: 0.1 }
+    )
+    observer.observe(el)
+
+    return () => observer.disconnect()
+  }, [entry.pokemonId, baseId, onNeedBaseId])
+
+  const displayDexNumber = entry.pokemonId > 1025 ? (baseId ?? entry.pokemonId) : entry.pokemonId
+
+  return (
+    <li ref={rowRef} style={{ listStyle: 'none' }}>
+      <Link
+        to={`/pokemon/${entry.pokemonId}`}
+        state={{ from: currentUrl }}
+        className="leaderboard-item"
+        style={{
+          boxSizing: 'border-box',
+          width: '100%',
+          overflow: 'hidden',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          background: 'var(--panel-bg)',
+          backdropFilter: 'var(--panel-blur)',
+          WebkitBackdropFilter: 'var(--panel-blur)',
+          borderRadius: '12px',
+          textDecoration: 'none',
+          color: 'inherit',
+        }}
+      >
+        <div
+          style={{
+            width: '28px',
+            flexShrink: 0,
+            textAlign: 'center',
+            fontSize: rank <= 3 ? '18px' : '13px',
+            fontWeight: 'bold',
+            color: rank <= 3 ? undefined : '#888',
+          }}
+        >
+          {formatRank(rank)}
+        </div>
+        <img
+          className="leaderboard-thumb"
+          src={staticSpriteUrl(entry.pokemonId)}
+          alt={entry.pokemonName}
+          style={{ width: '48px', height: '48px', flexShrink: 0, imageRendering: 'pixelated' }}
+        />
+        <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+          <div
+            style={{
+              fontSize: '14px',
+              fontWeight: 'bold',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {capitalize(entry.pokemonName)}
+          </div>
+          <div
+            style={{
+              fontSize: '12px',
+              color: '#888',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {formatDexNumber(displayDexNumber)} · Generation {entry.generation}
+          </div>
+        </div>
+        <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff', flexShrink: 0, whiteSpace: 'nowrap' }}>
+          {entry.count} {entry.count === 1 ? 'vote' : 'votes'}
+        </div>
+      </Link>
+    </li>
+  )
+}
+
 export default function Results() {
   const [searchParams, setSearchParams] = useSearchParams()
   const genParam = searchParams.get('gen')
@@ -80,7 +179,27 @@ export default function Results() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [isGenOpen, setIsGenOpen] = useState(false)
+  const [baseIdMap, setBaseIdMap] = useState({})
   const genFilterRef = useRef(null)
+  const baseIdFetchingRef = useRef(new Set())
+
+  function resolveBaseId(pokemonId) {
+    if (baseIdFetchingRef.current.has(pokemonId)) return
+    baseIdFetchingRef.current.add(pokemonId)
+
+    fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonId}`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`Request failed with status ${res.status}`)
+        return res.json()
+      })
+      .then((data) => {
+        const baseId = extractIdFromUrl(data.species.url)
+        setBaseIdMap((prev) => ({ ...prev, [pokemonId]: baseId }))
+      })
+      .catch(() => {
+        baseIdFetchingRef.current.delete(pokemonId)
+      })
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -309,78 +428,16 @@ export default function Results() {
               gap: '8px',
             }}
           >
-            {filteredLeaderboard.map((entry, index) => {
-              const rank = ranks[index]
-              return (
-                <li key={`${entry.pokemonId}-${entry.pokemonName}`} style={{ listStyle: 'none' }}>
-                  <Link
-                    to={`/pokemon/${entry.pokemonId}`}
-                    state={{ from: currentUrl }}
-                    className="leaderboard-item"
-                    style={{
-                      boxSizing: 'border-box',
-                      width: '100%',
-                      overflow: 'hidden',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
-                      background: 'var(--panel-bg)',
-                      backdropFilter: 'var(--panel-blur)',
-                      WebkitBackdropFilter: 'var(--panel-blur)',
-                      borderRadius: '12px',
-                      textDecoration: 'none',
-                      color: 'inherit',
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: '28px',
-                        flexShrink: 0,
-                        textAlign: 'center',
-                        fontSize: rank <= 3 ? '18px' : '13px',
-                        fontWeight: 'bold',
-                        color: rank <= 3 ? undefined : '#888',
-                      }}
-                    >
-                      {formatRank(rank)}
-                    </div>
-                    <img
-                      className="leaderboard-thumb"
-                      src={staticSpriteUrl(entry.pokemonId)}
-                      alt={entry.pokemonName}
-                      style={{ width: '48px', height: '48px', flexShrink: 0, imageRendering: 'pixelated' }}
-                    />
-                    <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
-                      <div
-                        style={{
-                          fontSize: '14px',
-                          fontWeight: 'bold',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                        }}
-                      >
-                        {capitalize(entry.pokemonName)}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: '12px',
-                          color: '#888',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                        }}
-                      >
-                        {formatDexNumber(entry.pokemonId)} · Generation {entry.generation}
-                      </div>
-                    </div>
-                    <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff', flexShrink: 0, whiteSpace: 'nowrap' }}>
-                      {entry.count} {entry.count === 1 ? 'vote' : 'votes'}
-                    </div>
-                  </Link>
-                </li>
-              )
-            })}
+            {filteredLeaderboard.map((entry, index) => (
+              <LeaderboardRow
+                key={`${entry.pokemonId}-${entry.pokemonName}`}
+                entry={entry}
+                rank={ranks[index]}
+                currentUrl={currentUrl}
+                baseId={baseIdMap[entry.pokemonId]}
+                onNeedBaseId={resolveBaseId}
+              />
+            ))}
           </ul>
         )}
       </div>
