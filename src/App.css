@@ -275,6 +275,15 @@ p {
 .navbar-link:nth-child(4) { animation-delay: 0.24s; }
 .navbar-link:nth-child(5) { animation-delay: 0.32s; }
 
+.navbar-credit {
+  color: #555;
+  transition: color 0.15s ease;
+}
+
+.navbar-credit:hover {
+  color: #aaa;
+}
+
 @media (max-width: 767px) {
   .navbar {
     top: 56px;
