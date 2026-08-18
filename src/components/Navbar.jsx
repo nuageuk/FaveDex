@@ -95,6 +95,7 @@ export default function Navbar({ theme, onToggleTheme }) {
               key={link.to}
               to={link.to}
               end={link.end}
+              className="navbar-link"
               onClick={() => setIsOpen(false)}
               style={({ isActive }) => ({
                 padding: '8px 10px',

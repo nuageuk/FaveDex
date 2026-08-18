@@ -173,9 +173,41 @@ p {
   display: none;
 }
 
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 .app-content {
   margin-left: 200px;
+  animation: pageFadeIn 200ms ease;
 }
+
+@keyframes navLinkSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.navbar-link {
+  opacity: 0;
+  animation: navLinkSlideIn 0.3s ease forwards;
+}
+
+.navbar-link:nth-child(1) { animation-delay: 0s; }
+.navbar-link:nth-child(2) { animation-delay: 0.08s; }
+.navbar-link:nth-child(3) { animation-delay: 0.16s; }
+.navbar-link:nth-child(4) { animation-delay: 0.24s; }
+.navbar-link:nth-child(5) { animation-delay: 0.32s; }
 
 @media (max-width: 767px) {
   .navbar {

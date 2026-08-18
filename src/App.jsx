@@ -64,7 +64,7 @@ export default function App() {
     <div className={`theme-${theme}`}>
       {showBackgroundVideo && <BackgroundVideo />}
       <Navbar theme={theme} onToggleTheme={toggleTheme} />
-      <div className="app-content">
+      <div className="app-content" key={location.pathname}>
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/dex" element={<Dex />} />
