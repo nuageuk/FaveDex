@@ -699,9 +699,13 @@ export default function Dex() {
     dexNumber: extractIdFromUrl(p.url),
     displayName: formatPokemonName(p.name),
   }))
+  const queryWords = query.trim().toLowerCase().split(/\s+/).filter(Boolean)
   const filtered =
-    query.length > 0
-      ? numbered.filter((p) => p.displayName.toLowerCase().includes(query.toLowerCase()))
+    queryWords.length > 0
+      ? numbered.filter((p) => {
+          const name = p.displayName.toLowerCase()
+          return queryWords.every((word) => name.includes(word))
+        })
       : numbered
 
   function handleSelect(p) {
