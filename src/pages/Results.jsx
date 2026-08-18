@@ -71,6 +71,7 @@ export function aggregateVotes(votes) {
 
 export default function Results() {
   const [selectedGen, setSelectedGen] = useState('all')
+  const [searchQuery, setSearchQuery] = useState('')
   const [leaderboard, setLeaderboard] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -114,10 +115,15 @@ export default function Results() {
     setIsGenOpen(false)
   }
 
-  const filteredLeaderboard =
+  const genFilteredLeaderboard =
     selectedGen === 'all'
       ? leaderboard
       : leaderboard.filter((entry) => getGeneration(entry.pokemonId) === selectedGen)
+  const trimmedSearch = searchQuery.trim().toLowerCase()
+  const filteredLeaderboard =
+    trimmedSearch.length > 0
+      ? genFilteredLeaderboard.filter((entry) => entry.pokemonName.toLowerCase().includes(trimmedSearch))
+      : genFilteredLeaderboard
   const ranks = computeRanks(filteredLeaderboard)
 
   if (loading) return <div style={{ color: '#f0f0f0' }}>Loading...</div>
@@ -137,7 +143,35 @@ export default function Results() {
           Leaderboard
         </h1>
 
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '8px',
+            marginBottom: '16px',
+            width: '100%',
+          }}
+        >
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search Pokémon..."
+            style={{
+              flex: 1,
+              minWidth: 0,
+              maxWidth: '220px',
+              boxSizing: 'border-box',
+              padding: '10px 12px',
+              background: '#1a1a1a',
+              color: '#f0f0f0',
+              border: '1px solid #333',
+              borderRadius: '4px',
+              fontSize: '16px',
+              outline: 'none',
+            }}
+          />
+
           <div ref={genFilterRef} style={{ position: 'relative', width: '100%', maxWidth: '220px' }}>
             <button
               onClick={() => setIsGenOpen((open) => !open)}
@@ -220,7 +254,11 @@ export default function Results() {
             }}
           >
             <p style={{ marginBottom: '12px' }}>
-              {leaderboard.length === 0 ? 'No votes yet — be the first!' : 'No votes for this generation yet.'}
+              {leaderboard.length === 0
+                ? 'No votes yet — be the first!'
+                : trimmedSearch.length > 0
+                  ? 'No Pokémon match your search.'
+                  : 'No votes for this generation yet.'}
             </p>
             <Link to="/dex" style={{ color: '#fff' }}>
               Go to the Dex
