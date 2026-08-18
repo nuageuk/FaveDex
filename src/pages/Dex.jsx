@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Filter } from 'bad-words'
+import { reverseGeocode } from '../utils/geo'
 
 const profanityFilter = new Filter()
 
@@ -309,11 +310,19 @@ export default function Dex() {
       return
     }
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        finalizeVote({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        })
+      async (position) => {
+        const lat = position.coords.latitude
+        const lng = position.coords.longitude
+        let city = null
+        let country = null
+        try {
+          const geocoded = await reverseGeocode(lat, lng)
+          city = geocoded.city
+          country = geocoded.country
+        } catch {
+          // ignore geocoding failures, still record raw coords
+        }
+        finalizeVote({ lat, lng, city, country })
       },
       () => {
         finalizeVote(null)
