@@ -2,11 +2,60 @@
 
 **Vote for your favourite Pokémon. See what the world picks.**
 
-FaveDex is a live, vote-based popularity tracker for all 1025 National Dex Pokémon. Every vote is tagged with your location to build a real-time picture of the world's favourite Pokémon, complete with usernames and reasons why.
-
 [favedex.vercel.app](https://favedex.vercel.app)
 
-![FaveDex](screenshot.png)
+<div align="center">
+  <img src="screenshot.png" width="100%" />
+</div>
+
+<div align="center">
+  <img src="screenshot1.png" width="32%" />
+  <img src="screenshot2.png" width="32%" />
+  <img src="screenshot3.png" width="32%" />
+</div>
+
+---
+
+## What is it?
+
+FaveDex is a live, vote-based popularity tracker for all 1025 National Dex Pokémon. Pick your favourite, leave a reason, and your vote gets tagged to your city and country. The leaderboard updates in real time — filtered by generation, ranked with medals, with tied entries handled Olympic-style.
+
+Each Pokémon has its own profile page showing total votes, leaderboard rank, and every reason people left, newest first.
+
+---
+
+## Workflow
+
+1. Pick a Pokémon from the searchable dropdown
+2. Optionally add a username and reason (up to 280 characters)
+3. Allow or skip location — if allowed, your coordinates are reverse-geocoded to city and country client-side before submission
+4. Hit confirm — your vote is submitted to a Vercel Edge Function, rate-limited by IP, and inserted into Supabase
+5. View the live leaderboard or your Pokémon's profile page
+
+---
+
+## Architecture
+
+Votes flow through a Vercel Edge Function (`/api/vote`) rather than hitting Supabase directly from the client. The edge function handles input validation, sanitisation, and IP-based rate limiting (one vote per IP per day), then inserts using the Supabase service key server-side. The client only holds the publishable key, used for read-only leaderboard and profile queries — protected by Row Level Security policies on the `votes` table.
+
+```
+Browser → POST /api/vote (Edge Function)
+             ├── Validate + sanitise input
+             ├── Rate limit by IP + date
+             └── Insert via service key → Supabase (Postgres + RLS)
+
+Browser → GET supabase/votes (publishable key, RLS read-only)
+```
+
+---
+
+## Tech Stack
+
+- **Frontend** — React, Vite
+- **Backend** — Supabase (Postgres + RLS), Vercel Edge Functions
+- **Sprites** — PokeAPI CDN (animated Gen 1–5, static beyond)
+- **Geocoding** — Nominatim (OpenStreetMap)
+
 ---
 
 ## Features
@@ -19,16 +68,7 @@ FaveDex is a live, vote-based popularity tracker for all 1025 National Dex Poké
 - Fully mobile responsive
 - Server-side IP rate limiting via Vercel Edge Functions
 
-## Tech Stack
-
-- **Frontend** — React, Vite
-- **Backend** — Supabase (Postgres + RLS), Vercel Edge Functions
-- **Sprites** — PokeAPI CDN (animated Gen 1–5, static beyond)
-- **Geocoding** — Nominatim (OpenStreetMap)
-
-## Architecture
-
-Votes are submitted via a Vercel Edge Function (`/api/vote`) which handles input validation, IP-based rate limiting, and insertion using the Supabase service key — keeping privileged credentials server-side only. The client uses the publishable key for read-only leaderboard and profile queries, protected by Row Level Security.
+---
 
 ## Part of Nuage's PC
 
