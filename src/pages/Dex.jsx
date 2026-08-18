@@ -526,91 +526,93 @@ export default function Dex() {
       }}
     >
       <div ref={containerRef} style={{ position: 'relative', width: '100%', maxWidth: '280px' }}>
-        <button
-          onClick={() => setIsOpen((open) => !open)}
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => {
+            const value = e.target.value
+            setQuery(value)
+            setIsOpen(value.length > 0)
+          }}
+          onFocus={() => {
+            if (query.length > 0) setIsOpen(true)
+          }}
+          placeholder="Search Pokémon..."
           style={{
             width: '100%',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
+            boxSizing: 'border-box',
             padding: '10px 12px',
             background: '#1a1a1a',
             color: '#f0f0f0',
             border: '1px solid #333',
             borderRadius: '4px',
-            fontSize: '14px',
-            cursor: 'pointer',
+            outline: 'none',
+            fontSize: '16px',
           }}
-        >
-          <span>{selected ? `#${selected.dexNumber} ${capitalize(selected.name)}` : 'Select a Pokémon'}</span>
-          <span style={{ color: '#888' }}>{isOpen ? '▲' : '▼'}</span>
-        </button>
+        />
 
-        {isOpen && (
-          <div
+        {isOpen && query.length > 0 && (
+          <ul
             style={{
               position: 'absolute',
               top: 'calc(100% + 4px)',
               left: 0,
               width: '100%',
+              listStyle: 'none',
+              margin: 0,
+              padding: 0,
               background: 'var(--panel-bg)',
               backdropFilter: 'var(--panel-blur)',
               WebkitBackdropFilter: 'var(--panel-blur)',
               border: '1px solid var(--panel-border-color)',
               borderRadius: '12px',
-              overflow: 'hidden',
+              overflowY: 'auto',
+              maxHeight: '264px',
               zIndex: 10,
               boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5)',
             }}
           >
-            <input
-              type="text"
-              autoFocus
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search Pokémon..."
-              style={{
-                width: '100%',
-                boxSizing: 'border-box',
-                padding: '10px 12px',
-                background: '#1a1a1a',
-                color: '#f0f0f0',
-                border: 'none',
-                borderBottom: '1px solid #333',
-                outline: 'none',
-                fontSize: '14px',
-              }}
-            />
-            <ul
-              style={{
-                listStyle: 'none',
-                margin: 0,
-                padding: 0,
-                maxHeight: '240px',
-                overflowY: 'auto',
-              }}
-            >
-              {filtered.map((p) => (
+            {filtered.length > 0 ? (
+              filtered.map((p) => (
                 <li
                   key={p.name}
                   onClick={() => handleSelect(p)}
                   style={{
-                    padding: '8px 12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '6px 12px',
                     cursor: 'pointer',
                     fontSize: '14px',
                     color: '#f0f0f0',
                   }}
                 >
-                  #{p.dexNumber} {capitalize(p.name)}
+                  <img
+                    src={`/icons/${p.dexNumber}.png`}
+                    alt=""
+                    onError={(e) => {
+                      const fallback = spriteUrl(p.dexNumber, true)
+                      if (e.target.src !== fallback) {
+                        e.target.src = fallback
+                      }
+                    }}
+                    style={{
+                      width: '32px',
+                      height: '32px',
+                      objectFit: 'contain',
+                      imageRendering: 'pixelated',
+                      flexShrink: 0,
+                    }}
+                  />
+                  <span>
+                    #{p.dexNumber} {capitalize(p.name)}
+                  </span>
                 </li>
-              ))}
-              {filtered.length === 0 && (
-                <li style={{ padding: '8px 12px', fontSize: '14px', color: '#555' }}>
-                  No results
-                </li>
-              )}
-            </ul>
-          </div>
+              ))
+            ) : (
+              <li style={{ padding: '8px 12px', fontSize: '14px', color: '#555' }}>No results</li>
+            )}
+          </ul>
         )}
       </div>
 
