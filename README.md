@@ -9,7 +9,7 @@
 </div>
 
 <div align="center">
-  <img src="screenshot.png" width="60%" />
+  <img src="public/screenshot.png" width="60%" />
 </div>
 
 ---
