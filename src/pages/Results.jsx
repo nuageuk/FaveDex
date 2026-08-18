@@ -21,6 +21,15 @@ function extractIdFromUrl(url) {
   return Number(segments[segments.length - 1])
 }
 
+const LEADERBOARD_CACHE_TTL_MS = 60000
+let leaderboardCache = null
+
+function getFreshLeaderboardCache() {
+  if (!leaderboardCache) return null
+  if (Date.now() - leaderboardCache.timestamp >= LEADERBOARD_CACHE_TTL_MS) return null
+  return leaderboardCache.data
+}
+
 const RANK_MEDALS = ['🥇', '🥈', '🥉']
 
 export function formatRank(rank) {
@@ -174,8 +183,8 @@ export default function Results() {
   const parsedGen = genParam !== null ? Number(genParam) : null
   const selectedGen = parsedGen !== null && GENERATIONS.includes(parsedGen) ? parsedGen : 'all'
   const searchQuery = searchParams.get('q') ?? ''
-  const [leaderboard, setLeaderboard] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [leaderboard, setLeaderboard] = useState(() => getFreshLeaderboardCache() ?? [])
+  const [loading, setLoading] = useState(() => getFreshLeaderboardCache() === null)
   const [error, setError] = useState(null)
   const [isGenOpen, setIsGenOpen] = useState(false)
   const [baseIdMap, setBaseIdMap] = useState({})
@@ -201,6 +210,13 @@ export default function Results() {
   }
 
   useEffect(() => {
+    const cached = getFreshLeaderboardCache()
+    if (cached) {
+      setLeaderboard(cached)
+      setLoading(false)
+      return
+    }
+
     let cancelled = false
 
     supabase
@@ -212,13 +228,14 @@ export default function Results() {
           setLoading(false)
           return
         }
-        const leaderboard = (data ?? []).map((row) => ({
+        const mapped = (data ?? []).map((row) => ({
           pokemonId: row.pokemon_id,
           pokemonName: row.pokemon_name,
           generation: row.generation,
           count: Number(row.count),
         }))
-        setLeaderboard(leaderboard)
+        leaderboardCache = { data: mapped, timestamp: Date.now() }
+        setLeaderboard(mapped)
         setLoading(false)
       })
 
