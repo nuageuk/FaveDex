@@ -16,9 +16,11 @@
 
 ## What is it?
 
-FaveDex is a live, vote-based popularity tracker for all 1025 National Dex Pokémon. Pick your favourite, leave a reason, and your vote gets tagged to your city and country. The leaderboard updates in real time, filtered by generation, ranked with medals, with tied entries handled Olympic-style.
+FaveDex is a live, vote-based popularity tracker for all 1351 Pokémon, including regional variants and alternate forms. Pick your favourite, leave a reason, and your vote gets tagged to your city and country. The leaderboard updates in real time, filtered by generation, ranked with medals, with tied entries handled Olympic-style.
 
-Each Pokémon has its own profile page showing total votes, leaderboard rank, and every reason people left, newest first.
+Each Pokémon has its own profile page showing total votes, leaderboard rank, and every reason people left, newest first with relative timestamps.
+
+Regional variants and alternate forms (Alolan, Galarian, Hisuian, Paldean, Mega, Gigantamax, and more) are tracked as separate entries with their own vote counts, leaderboard positions, and profile pages.
 
 ---
 
@@ -28,7 +30,7 @@ Each Pokémon has its own profile page showing total votes, leaderboard rank, an
 |:---:|:---:|:---:|
 | ![](screenshot1.png) | ![](screenshot2.png) | ![](screenshot3.png) |
 
-1. Pick a Pokémon from the searchable dropdown
+1. Search for a Pokémon by name
 2. Optionally add a username and reason (up to 280 characters)
 3. Allow or skip location. Your coordinates are reverse-geocoded to city and country client-side before submission
 4. Hit confirm: Your vote is submitted to a Vercel Edge Function, rate-limited by IP, and inserted into Supabase
@@ -40,14 +42,13 @@ Each Pokémon has its own profile page showing total votes, leaderboard rank, an
 
 Votes flow through a Vercel Edge Function (`/api/vote`) rather than hitting Supabase directly from the client. The edge function handles input validation, sanitisation, and IP-based rate limiting (one vote per IP per day), then inserts using the Supabase service key server-side. The client only holds the publishable key, used for read-only leaderboard and profile queries (protected by Row Level Security policies on the `votes` table).
 
-```
 Browser → POST /api/vote (Edge Function)
-             ├── Validate + sanitise input
-             ├── Rate limit by IP + date
-             └── Insert via service key → Supabase (Postgres + RLS)
+├── Validate + sanitise input
+├── Rate limit by IP + date
+└── Insert via service key → Supabase (Postgres + RLS)
 
 Browser → GET supabase/votes (publishable key, RLS read-only)
-```
+
 
 ---
 
@@ -55,21 +56,24 @@ Browser → GET supabase/votes (publishable key, RLS read-only)
 
 - **Frontend** — React, Vite
 - **Backend** — Supabase (Postgres + RLS), Vercel Edge Functions
-- **Sprites** — PokeAPI CDN (animated Gen 1–5, static beyond)
+- **Sprites** — PokeAPI CDN (animated Gen 1–5, static beyond), local icon sprites for combobox
 - **Geocoding** — Nominatim (OpenStreetMap)
 
 ---
 
 ## Features
 
-- Vote for any of the 1025 National Dex Pokémon once per day
+- Vote for any of the 1351 Pokémon including regional variants and alternate forms
+- Regional variants and alternate forms tracked as separate leaderboard entries
+- Searchable combobox with natural language search ("alolan vulpix", "mega charizard y")
 - Votes tagged by city and country via reverse geocoding
-- Live leaderboard with generation filter, medal rankings, and tied-rank support
-- Pokémon profile pages showing vote reasons and usernames
+- Live leaderboard with generation filter, name search, medal rankings, and tied-rank support
+- URL-persisted filter state back navigation restores your search and generation filter
+- Pokémon profile pages showing vote count, rank, reasons, and relative timestamps
 - Glassmorphism UI with animated Gen 3 video background and dark mode toggle
-- Fully mobile responsive
+- Fully mobile responsive with iOS autoplay support
 - Server-side IP rate limiting via Vercel Edge Functions
-
+- 404 page (feat. Psyduck)
 
 ---
 
@@ -78,15 +82,15 @@ Browser → GET supabase/votes (publishable key, RLS read-only)
 - [x] Vote submission with username and reason
 - [x] Reverse geocoding to city and country
 - [x] Cookie + server-side IP rate limiting
-- [x] Live leaderboard with generation filter and medal rankings
-- [x] Pokémon profile pages with vote reasons
+- [x] Live leaderboard with generation filter, name search, and medal rankings
+- [x] Pokémon profile pages with vote reasons and relative timestamps
+- [x] Regional variants and alternate forms as separate entries
 - [x] Glassmorphism UI with video background and dark mode toggle
-- [x] Mobile responsive
+- [x] Mobile responsive with iOS video autoplay fix
 - [x] Deployed on Vercel with Supabase backend
 - [ ] Heart reacts on reasons
 - [ ] World map view of votes by location
-- [ ] Share your vote / profile page
-- [ ] Pokémon type colours on profile pages
+- [ ] Manual location input
 - [ ] Custom domain (nuagespc.com)
 
 ---
