@@ -4,13 +4,11 @@ import Dex from './pages/Dex.jsx'
 import Results from './pages/Results.jsx'
 import Navbar from './components/Navbar.jsx'
 
-const NAVBAR_WIDTH = 200
-
 export default function App() {
   return (
     <>
       <Navbar />
-      <div style={{ marginLeft: `${NAVBAR_WIDTH}px` }}>
+      <div className="app-content">
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/dex" element={<Dex />} />
