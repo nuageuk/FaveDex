@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { getGeneration } from './Dex'
@@ -27,6 +27,7 @@ export default function Pokemon() {
   const [error, setError] = useState(null)
   const [spriteError, setSpriteError] = useState(false)
   const [overallRank, setOverallRank] = useState(null)
+  const spriteTimeoutRef = useRef(null)
 
   useEffect(() => {
     let cancelled = false
@@ -72,6 +73,21 @@ export default function Pokemon() {
       cancelled = true
     }
   }, [pokemonId])
+
+  useEffect(() => {
+    if (pokemonId > 649 || spriteError) return
+
+    spriteTimeoutRef.current = setTimeout(() => {
+      setSpriteError(true)
+    }, 1500)
+
+    return () => {
+      if (spriteTimeoutRef.current) {
+        clearTimeout(spriteTimeoutRef.current)
+        spriteTimeoutRef.current = null
+      }
+    }
+  }, [pokemonId, spriteError])
 
   if (loading) return <div style={{ color: '#f0f0f0' }}>Loading...</div>
   if (error) return <div style={{ color: '#f0f0f0' }}>Error: {error}</div>
@@ -122,6 +138,12 @@ export default function Pokemon() {
             className="sprite-static"
             src={spriteUrl(pokemonId, pokemonId > 649 || spriteError)}
             onError={() => setSpriteError(true)}
+            onLoad={() => {
+              if (spriteTimeoutRef.current) {
+                clearTimeout(spriteTimeoutRef.current)
+                spriteTimeoutRef.current = null
+              }
+            }}
             alt={pokemonName ?? `Pokémon ${formatDexNumber(pokemonId)}`}
           />
           <div style={{ fontSize: '18px', fontWeight: 'bold' }}>

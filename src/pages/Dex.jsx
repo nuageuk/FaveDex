@@ -96,6 +96,8 @@ export default function Dex() {
   const newPeakCanvasRef = useRef(null)
   const animationFrameRef = useRef(null)
   const prevDexNumberRef = useRef(null)
+  const spriteLoadTimeoutRef = useRef(null)
+  const confirmSpriteTimeoutRef = useRef(null)
 
   useEffect(() => {
     fetch('https://pokeapi.co/api/v2/pokemon?limit=1025')
@@ -275,6 +277,51 @@ export default function Dex() {
     }
   }, [selected])
 
+  useEffect(() => {
+    if (!selected || selected.dexNumber > 649) return
+    const img = imgRef.current
+    if (!img) return
+
+    function handleLoad() {
+      if (spriteLoadTimeoutRef.current) {
+        clearTimeout(spriteLoadTimeoutRef.current)
+        spriteLoadTimeoutRef.current = null
+      }
+    }
+
+    spriteLoadTimeoutRef.current = setTimeout(() => {
+      const fallback = spriteUrl(selected.dexNumber, true)
+      if (img.src !== fallback) {
+        img.src = fallback
+      }
+    }, 1500)
+
+    img.addEventListener('load', handleLoad)
+
+    return () => {
+      if (spriteLoadTimeoutRef.current) {
+        clearTimeout(spriteLoadTimeoutRef.current)
+        spriteLoadTimeoutRef.current = null
+      }
+      img.removeEventListener('load', handleLoad)
+    }
+  }, [selected])
+
+  useEffect(() => {
+    if (!vote || vote.pokemonId > 649 || confirmSpriteError) return
+
+    confirmSpriteTimeoutRef.current = setTimeout(() => {
+      setConfirmSpriteError(true)
+    }, 1500)
+
+    return () => {
+      if (confirmSpriteTimeoutRef.current) {
+        clearTimeout(confirmSpriteTimeoutRef.current)
+        confirmSpriteTimeoutRef.current = null
+      }
+    }
+  }, [vote, confirmSpriteError])
+
   async function finalizeVote(location) {
     if (!selected) return
     const cleanUsername = stripHtmlTags(username.trim())
@@ -380,6 +427,12 @@ export default function Dex() {
             className="sprite-static"
             src={spriteUrl(vote.pokemonId, vote.pokemonId > 649 || confirmSpriteError)}
             onError={() => setConfirmSpriteError(true)}
+            onLoad={() => {
+              if (confirmSpriteTimeoutRef.current) {
+                clearTimeout(confirmSpriteTimeoutRef.current)
+                confirmSpriteTimeoutRef.current = null
+              }
+            }}
             alt={vote.pokemonName}
           />
           <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{capitalize(vote.pokemonName)}</div>
