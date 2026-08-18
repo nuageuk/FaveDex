@@ -1,5 +1,3 @@
-import { createClient } from '@supabase/supabase-js'
-
 export const config = { runtime: 'edge' }
 
 const MAX_NAME_LENGTH = 50
@@ -92,19 +90,25 @@ export default async function handler(request) {
     return jsonResponse(500, { error: 'Server misconfigured' })
   }
 
-  const supabase = createClient(supabaseUrl, serviceKey)
-
-  const { error } = await supabase.from('votes').insert({
-    pokemon_id: pokemonId,
-    pokemon_name: pokemonName.trim().slice(0, MAX_NAME_LENGTH),
-    generation,
-    city: cleanCity,
-    country: cleanCountry,
-    username: cleanUsername,
-    reason: cleanReason,
+  const insertResponse = await fetch(`${supabaseUrl}/rest/v1/votes`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      apikey: serviceKey,
+      Authorization: `Bearer ${serviceKey}`,
+    },
+    body: JSON.stringify({
+      pokemon_id: pokemonId,
+      pokemon_name: pokemonName.trim().slice(0, MAX_NAME_LENGTH),
+      generation,
+      city: cleanCity,
+      country: cleanCountry,
+      username: cleanUsername,
+      reason: cleanReason,
+    }),
   })
 
-  if (error) {
+  if (!insertResponse.ok) {
     return jsonResponse(500, { error: 'Failed to record vote' })
   }
 
