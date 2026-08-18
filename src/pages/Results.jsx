@@ -266,9 +266,13 @@ export default function Results() {
   const genFilteredLeaderboard =
     selectedGen === 'all' ? leaderboard : leaderboard.filter((entry) => entry.generation === selectedGen)
   const trimmedSearch = searchQuery.trim().toLowerCase()
+  const searchWords = trimmedSearch.split(/\s+/).filter(Boolean)
   const filteredLeaderboard =
-    trimmedSearch.length > 0
-      ? genFilteredLeaderboard.filter((entry) => entry.pokemonName.toLowerCase().includes(trimmedSearch))
+    searchWords.length > 0
+      ? genFilteredLeaderboard.filter((entry) => {
+          const name = entry.pokemonName.toLowerCase()
+          return searchWords.every((word) => name.includes(word))
+        })
       : genFilteredLeaderboard
   const ranks = computeRanks(filteredLeaderboard)
   const paramsString = searchParams.toString()
