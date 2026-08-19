@@ -193,7 +193,7 @@ p {
 }
 
 @media (max-width: 399px) {
-  .leaderboard-thumb {
+  .leaderboard-rank {
     display: none;
   }
 }

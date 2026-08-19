@@ -112,6 +112,7 @@ function LeaderboardRow({ entry, rank, currentUrl, baseId, onNeedBaseId }) {
         }}
       >
         <div
+          className="leaderboard-rank"
           style={{
             width: '28px',
             flexShrink: 0,
