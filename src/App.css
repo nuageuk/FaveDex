@@ -140,9 +140,11 @@ p {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;  /* was: center */
   padding: 24px;
+  min-height: 100vh;
 }
+
 
 .leaderboard-container {
   box-sizing: border-box;
