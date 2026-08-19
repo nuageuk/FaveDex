@@ -216,6 +216,7 @@ export default function Dex() {
   const [reason, setReason] = useState('')
   const [formError, setFormError] = useState(null)
   const [formInfo, setFormInfo] = useState(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [baseIdMap, setBaseIdMap] = useState({})
 
   const containerRef = useRef(null)
@@ -522,41 +523,45 @@ export default function Dex() {
     const pokemonName = formatPokemonName(selected.name)
     const generation = pokemonId > 1025 && formInfo ? formInfo.generation : getGeneration(pokemonId)
 
-    let response
     try {
-      response = await fetch('/api/vote', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          pokemon_id: pokemonId,
-          pokemon_name: pokemonName,
-          generation,
-          city: location?.city ?? null,
-          country: location?.country ?? null,
-          username: cleanUsername.length > 0 ? cleanUsername : null,
-          reason: cleanReason.length > 0 ? cleanReason : null,
-        }),
-      })
-    } catch {
-      setShowLocationPrompt(false)
-      setFormError('Something went wrong submitting your vote. Please try again.')
-      return
-    }
+      let response
+      try {
+        response = await fetch('/api/vote', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            pokemon_id: pokemonId,
+            pokemon_name: pokemonName,
+            generation,
+            city: location?.city ?? null,
+            country: location?.country ?? null,
+            username: cleanUsername.length > 0 ? cleanUsername : null,
+            reason: cleanReason.length > 0 ? cleanReason : null,
+          }),
+        })
+      } catch {
+        setShowLocationPrompt(false)
+        setFormError('Something went wrong submitting your vote. Please try again.')
+        return
+      }
 
-    if (!response.ok) {
-      setShowLocationPrompt(false)
-      setFormError(
-        response.status === 429
-          ? 'You have already voted today.'
-          : 'Something went wrong submitting your vote. Please try again.'
-      )
-      return
-    }
+      if (!response.ok) {
+        setShowLocationPrompt(false)
+        setFormError(
+          response.status === 429
+            ? 'You have already voted today.'
+            : 'Something went wrong submitting your vote. Please try again.'
+        )
+        return
+      }
 
-    setVotedCookie()
-    setVotedToday(true)
-    setVote({ pokemonId, pokemonName, generation })
-    setShowLocationPrompt(false)
+      setVotedCookie()
+      setVotedToday(true)
+      setVote({ pokemonId, pokemonName, generation })
+      setShowLocationPrompt(false)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   function handleConfirm() {
@@ -575,6 +580,9 @@ export default function Dex() {
   }
 
   function handleAllowLocation() {
+    if (isSubmitting) return
+    setIsSubmitting(true)
+
     if (!navigator.geolocation) {
       finalizeVote(null)
       return
@@ -601,6 +609,8 @@ export default function Dex() {
   }
 
   function handleSkipLocation() {
+    if (isSubmitting) return
+    setIsSubmitting(true)
     finalizeVote(null)
   }
 
@@ -948,6 +958,7 @@ export default function Dex() {
               </div>
               <button
                 onClick={handleAllowLocation}
+                disabled={isSubmitting}
                 style={{
                   width: '100%',
                   padding: '10px 12px',
@@ -957,13 +968,15 @@ export default function Dex() {
                   borderRadius: '4px',
                   fontSize: '14px',
                   fontWeight: 600,
-                  cursor: 'pointer',
+                  cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                  opacity: isSubmitting ? 0.6 : 1,
                 }}
               >
-                Allow location
+                {isSubmitting ? 'Submitting...' : 'Allow location'}
               </button>
               <button
                 onClick={handleSkipLocation}
+                disabled={isSubmitting}
                 style={{
                   width: '100%',
                   padding: '10px 12px',
@@ -973,10 +986,11 @@ export default function Dex() {
                   borderRadius: '4px',
                   fontSize: '14px',
                   fontWeight: 600,
-                  cursor: 'pointer',
+                  cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                  opacity: isSubmitting ? 0.6 : 1,
                 }}
               >
-                Skip
+                {isSubmitting ? 'Submitting...' : 'Skip'}
               </button>
             </div>
           ) : (
