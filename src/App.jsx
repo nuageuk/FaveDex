@@ -71,6 +71,10 @@ export default function App() {
     setStoredTheme(theme)
   }, [theme])
 
+  useEffect(() => {
+    document.body.classList.toggle('landing-active', location.pathname === '/')
+  }, [location.pathname])
+
   function toggleTheme() {
     setTheme((current) => (current === 'video' ? 'dark' : 'video'))
   }

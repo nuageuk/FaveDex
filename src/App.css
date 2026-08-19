@@ -26,6 +26,10 @@ body {
   background: radial-gradient(circle at 50% 35%, #171717 0%, #0f0f0f 55%, #090909 100%);
   color: #f0f0f0;
   font-family: system-ui, sans-serif;
+  min-height: 100vh;
+}
+
+body.landing-active {
   height: 100vh;
   display: flex;
   align-items: center;
@@ -403,7 +407,7 @@ p {
 
   .app-content {
     margin-left: 0;
-    margin-top: 56px;
+    padding-top: 56px;
   }
 
   .dex-page {
@@ -413,6 +417,10 @@ p {
   .back-link {
     top: 72px;
     left: 16px;
+  }
+
+  .pokemon-content {
+    margin-top: 32px;
   }
 
   .leaderboard-container {

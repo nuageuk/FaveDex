@@ -193,7 +193,7 @@ export default function Pokemon() {
         ← Back to leaderboard
       </Link>
 
-      <div style={{ width: '100%', maxWidth: '480px', display: 'flex', flexDirection: 'column' }}>
+      <div className="pokemon-content" style={{ width: '100%', maxWidth: '480px', display: 'flex', flexDirection: 'column' }}>
         <div
           style={{
             width: '320px',
