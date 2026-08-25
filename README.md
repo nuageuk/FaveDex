@@ -1,15 +1,25 @@
-# FaveDex
-
-**Vote for your favourite Pokémon. See what the world picks.**
-
 <div align="center">
 
-## [favedex.vercel.app](https://favedex.vercel.app)
+<a href="https://favedex.vercel.app">
+  <img src="public/screenshot.png" width="80%" />
+</a>
 
-</div>
+<br/>
+<br/>
 
-<div align="center">
-  <img src="public/screenshot.png" width="60%" />
+<a href="https://favedex.vercel.app">
+  <img src="https://img.shields.io/badge/▶%20Try%20it%20live-favedex.vercel.app-4A90D9?style=for-the-badge&logoColor=white" />
+</a>
+
+<br/>
+<br/>
+
+<img src="https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB" />
+<img src="https://img.shields.io/badge/Vite-646CFF?style=flat&logo=vite&logoColor=white" />
+<img src="https://img.shields.io/badge/Supabase-3ECF8E?style=flat&logo=supabase&logoColor=white" />
+<img src="https://img.shields.io/badge/Vercel-000000?style=flat&logo=vercel&logoColor=white" />
+<img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black" />
+
 </div>
 
 ---
@@ -40,15 +50,16 @@ Regional variants and alternate forms (Alolan, Galarian, Hisuian, Paldean, Mega,
 
 ## Architecture
 
-Votes flow through a Vercel Edge Function (`/api/vote`) rather than hitting Supabase directly from the client. The edge function handles input validation, sanitisation, and IP-based rate limiting (one vote per IP per day), then inserts using the Supabase service key server-side. The client only holds the publishable key, used for read-only leaderboard and profile queries (protected by Row Level Security policies on the `votes` table).
+Votes flow through a Vercel Edge Function (`/api/vote`) rather than hitting Supabase directly from the client. The edge function rate limits by IP, validates and sanitises input, then inserts using the Supabase service key server-side. The client only holds the publishable key, used for read-only leaderboard and profile queries (protected by Row Level Security policies on the `votes` table).
 
+```
 Browser → POST /api/vote (Edge Function)
-├── Validate + sanitise input
 ├── Rate limit by IP + date
+├── Validate + sanitise input
 └── Insert via service key → Supabase (Postgres + RLS)
 
 Browser → GET supabase/votes (publishable key, RLS read-only)
-
+```
 
 ---
 
