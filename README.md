@@ -16,7 +16,7 @@
 
 ## What is it?
 
-FaveDex is a live, vote-based popularity tracker for all 1351 Pokémon, including regional variants and alternate forms. Pick your favourite, leave a reason, and your vote gets tagged to your city and country. The leaderboard updates in real time, filtered by generation, ranked with medals, with tied entries handled Olympic-style.
+FaveDex is a live, vote-based popularity tracker for all 1025 National Dex Pokémon, including regional variants, alternate forms, Mega Evolutions, and more! Every vote is tagged with your location to build a real-time picture of the world's favourite Pokémon, along with usernames and their reasons why. The leaderboard updates in real time, filtered by generation, ranked with medals, with tied entries handled Olympic-style.
 
 Each Pokémon has its own profile page showing total votes, leaderboard rank, and every reason people left, newest first with relative timestamps.
 
@@ -63,7 +63,7 @@ Browser → GET supabase/votes (publishable key, RLS read-only)
 
 ## Features
 
-- Vote for any of the 1351 Pokémon including regional variants and alternate forms
+- Vote for any of the 1025 National Dex Pokémon, including regional variants, alternate forms, Mega Evolutions, and more
 - Regional variants and alternate forms tracked as separate leaderboard entries
 - Searchable combobox with natural language search ("alolan vulpix", "mega charizard y")
 - Votes tagged by city and country via reverse geocoding
