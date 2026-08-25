@@ -39,6 +39,51 @@ function jsonResponse(status, body) {
   })
 }
 
+// Mirrors GENERATION_RANGES in src/pages/Dex.jsx.
+const GENERATION_RANGES = [
+  [1, 151],
+  [152, 251],
+  [252, 386],
+  [387, 493],
+  [494, 649],
+  [650, 721],
+  [722, 809],
+  [810, 905],
+  [906, 1025],
+]
+
+function getGeneration(id) {
+  const index = GENERATION_RANGES.findIndex(([start, end]) => id >= start && id <= end)
+  return index === -1 ? null : index + 1
+}
+
+// Mirrors FORM_GENERATION_MAP in src/pages/Dex.jsx. The client only sends the
+// formatted display name (e.g. "Charizard (Mega X)"), not the raw slug, so
+// matching is done via substring against the lowercased name rather than an
+// exact slug-segment match.
+const FORM_GENERATION_MAP = {
+  alola: 7,
+  galar: 8,
+  hisui: 8,
+  paldea: 9,
+  mega: 6,
+  gmax: 8,
+  gigantamax: 8,
+  primal: 6,
+  origin: 4,
+  therian: 5,
+}
+
+function getFormGeneration(pokemonName) {
+  const lower = pokemonName.toLowerCase()
+  const match = Object.keys(FORM_GENERATION_MAP).find((key) => lower.includes(key))
+  return match ? FORM_GENERATION_MAP[match] : null
+}
+
+function deriveGeneration(pokemonId, pokemonName) {
+  return pokemonId > 1025 ? getFormGeneration(pokemonName) : getGeneration(pokemonId)
+}
+
 export default async function handler(request) {
   if (request.method !== 'POST') {
     return jsonResponse(405, { error: 'Method not allowed' })
@@ -55,7 +100,7 @@ export default async function handler(request) {
     return jsonResponse(400, { error: 'Invalid request body' })
   }
 
-  const { pokemon_id: pokemonId, pokemon_name: pokemonName, generation, username, reason, city, country } = payload
+  const { pokemon_id: pokemonId, pokemon_name: pokemonName, username, reason, city, country } = payload
 
   if (!Number.isInteger(pokemonId) || pokemonId < 1) {
     return jsonResponse(400, { error: 'Invalid pokemon_id' })
@@ -63,8 +108,10 @@ export default async function handler(request) {
   if (typeof pokemonName !== 'string' || pokemonName.trim().length === 0) {
     return jsonResponse(400, { error: 'Invalid pokemon_name' })
   }
+
+  const generation = deriveGeneration(pokemonId, pokemonName)
   if (!Number.isInteger(generation) || generation < 1 || generation > 9) {
-    return jsonResponse(400, { error: 'Invalid generation' })
+    return jsonResponse(400, { error: 'Unable to determine generation' })
   }
 
   const cleanCity = sanitizeString(city, MAX_LOCATION_LENGTH)
