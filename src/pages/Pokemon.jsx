@@ -51,6 +51,7 @@ export default function Pokemon() {
   const [loading, setLoading] = useState(true)
   const [spriteError, setSpriteError] = useState(false)
   const [overallRank, setOverallRank] = useState(null)
+  const [totalVoteCount, setTotalVoteCount] = useState(null)
   const [apiName, setApiName] = useState(null)
   const [apiNameLoading, setApiNameLoading] = useState(true)
   const [baseDexNumber, setBaseDexNumber] = useState(null)
@@ -73,6 +74,7 @@ export default function Pokemon() {
       .select('id, username, reason, city, country, created_at, pokemon_name, generation')
       .eq('pokemon_id', pokemonId)
       .order('created_at', { ascending: false })
+      .limit(50)
       .then(({ data, error: fetchError }) => {
         if (cancelled) return
         if (fetchError) {
@@ -127,6 +129,7 @@ export default function Pokemon() {
       const ranks = computeRanks(cached)
       const index = cached.findIndex((entry) => entry.pokemonId === pokemonId)
       setOverallRank(index === -1 ? null : ranks[index])
+      setTotalVoteCount(index === -1 ? 0 : cached[index].count)
       return
     }
 
@@ -146,6 +149,7 @@ export default function Pokemon() {
         const ranks = computeRanks(leaderboard)
         const index = leaderboard.findIndex((entry) => entry.pokemonId === pokemonId)
         setOverallRank(index === -1 ? null : ranks[index])
+        setTotalVoteCount(index === -1 ? 0 : leaderboard[index].count)
       })
 
     return () => {
@@ -246,7 +250,7 @@ export default function Pokemon() {
               </div>
             )}
             <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff' }}>
-              {votes.length} {votes.length === 1 ? 'vote' : 'votes'}
+              {totalVoteCount ?? 0} {(totalVoteCount ?? 0) === 1 ? 'vote' : 'votes'}
             </div>
           </div>
         </div>
