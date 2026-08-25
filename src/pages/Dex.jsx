@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import { Filter } from 'bad-words'
 import { reverseGeocode } from '../utils/geo'
 import { hasVotedToday, setVotedCookie } from '../utils/voteLimit'
+import { supabase } from '../lib/supabase'
+import { setLeaderboardCache } from './Results'
 
 const profanityFilter = new Filter()
 
@@ -559,6 +561,19 @@ export default function Dex() {
       setVotedToday(true)
       setVote({ pokemonId, pokemonName, generation })
       setShowLocationPrompt(false)
+
+      supabase
+        .rpc('get_leaderboard')
+        .then(({ data, error: leaderboardError }) => {
+          if (leaderboardError) return
+          const mapped = (data ?? []).map((row) => ({
+            pokemonId: row.pokemon_id,
+            pokemonName: row.pokemon_name,
+            generation: row.generation,
+            count: Number(row.count),
+          }))
+          setLeaderboardCache(mapped)
+        })
     } finally {
       setIsSubmitting(false)
     }
