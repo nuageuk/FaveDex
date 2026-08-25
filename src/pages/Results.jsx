@@ -2,23 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import '../App.css'
 import { supabase } from '../lib/supabase'
-
-function capitalize(name) {
-  if (typeof name !== 'string' || name.length === 0) return ''
-  return name.charAt(0).toUpperCase() + name.slice(1)
-}
-
-function formatDexNumber(n) {
-  return `#${String(n).padStart(3, '0')}`
-}
+import { capitalize, extractIdFromUrl, formatDexNumber } from '../utils/helpers'
 
 function staticSpriteUrl(id) {
   return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`
-}
-
-function extractIdFromUrl(url) {
-  const segments = url.split('/').filter(Boolean)
-  return Number(segments[segments.length - 1])
 }
 
 const LEADERBOARD_CACHE_TTL_MS = 60000

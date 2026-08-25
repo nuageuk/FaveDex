@@ -5,16 +5,12 @@ import { reverseGeocode } from '../utils/geo'
 import { hasVotedToday, setVotedCookie } from '../utils/voteLimit'
 import { supabase } from '../lib/supabase'
 import { setLeaderboardCache } from './Results'
+import { capitalize, extractIdFromUrl, formatDexNumber } from '../utils/helpers'
 
 const profanityFilter = new Filter()
 
 function stripHtmlTags(value) {
   return value.replace(/<[^>]*>/g, '')
-}
-
-function capitalize(name) {
-  if (typeof name !== 'string' || name.length === 0) return ''
-  return name.charAt(0).toUpperCase() + name.slice(1)
 }
 
 const NAME_SUFFIX_LABELS = [
@@ -45,15 +41,6 @@ function formatPokemonName(slug) {
   const [suffix, label] = match
   const base = slug.slice(0, -suffix.length)
   return `${capitalizeWords(base)} (${label})`
-}
-
-function extractIdFromUrl(url) {
-  const segments = url.split('/').filter(Boolean)
-  return Number(segments[segments.length - 1])
-}
-
-function formatDexNumber(n) {
-  return `#${String(n).padStart(3, '0')}`
 }
 
 function spriteUrl(id, useFallback) {

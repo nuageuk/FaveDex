@@ -3,15 +3,7 @@ import { useParams, useLocation, useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { getGeneration } from './Dex'
 import { getFreshLeaderboardCache, setLeaderboardCache, computeRanks, formatRank } from './Results'
-
-function capitalize(name) {
-  if (typeof name !== 'string' || name.length === 0) return ''
-  return name.charAt(0).toUpperCase() + name.slice(1)
-}
-
-function formatDexNumber(n) {
-  return `#${String(n).padStart(3, '0')}`
-}
+import { capitalize, extractIdFromUrl, formatDexNumber } from '../utils/helpers'
 
 function formatRelativeTime(dateString) {
   const diffMs = Date.now() - new Date(dateString).getTime()
@@ -33,11 +25,6 @@ function spriteUrl(id, useFallback) {
   return useFallback
     ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`
     : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${id}.gif`
-}
-
-function extractIdFromUrl(url) {
-  const segments = url.split('/').filter(Boolean)
-  return Number(segments[segments.length - 1])
 }
 
 export default function Pokemon() {
