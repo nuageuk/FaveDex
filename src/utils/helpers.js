@@ -11,3 +11,12 @@ export function extractIdFromUrl(url) {
 export function formatDexNumber(n) {
   return `#${String(n).padStart(3, '0')}`
 }
+
+export function mapLeaderboardRow(row) {
+  return {
+    pokemonId: row.pokemon_id,
+    pokemonName: row.pokemon_name,
+    generation: row.generation,
+    count: Number(row.count),
+  }
+}

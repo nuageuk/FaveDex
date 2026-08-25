@@ -5,7 +5,7 @@ import { reverseGeocode } from '../utils/geo'
 import { hasVotedToday, setVotedCookie } from '../utils/voteLimit'
 import { supabase } from '../lib/supabase'
 import { setLeaderboardCache } from './Results'
-import { capitalize, extractIdFromUrl, formatDexNumber } from '../utils/helpers'
+import { capitalize, extractIdFromUrl, formatDexNumber, mapLeaderboardRow } from '../utils/helpers'
 
 const profanityFilter = new Filter()
 
@@ -553,12 +553,7 @@ export default function Dex() {
         .rpc('get_leaderboard')
         .then(({ data, error: leaderboardError }) => {
           if (leaderboardError) return
-          const mapped = (data ?? []).map((row) => ({
-            pokemonId: row.pokemon_id,
-            pokemonName: row.pokemon_name,
-            generation: row.generation,
-            count: Number(row.count),
-          }))
+          const mapped = (data ?? []).map(mapLeaderboardRow)
           setLeaderboardCache(mapped)
         })
     } finally {

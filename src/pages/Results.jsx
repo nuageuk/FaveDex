@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import '../App.css'
 import { supabase } from '../lib/supabase'
-import { capitalize, extractIdFromUrl, formatDexNumber } from '../utils/helpers'
+import { capitalize, extractIdFromUrl, formatDexNumber, mapLeaderboardRow } from '../utils/helpers'
 
 function staticSpriteUrl(id) {
   return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`
@@ -200,12 +200,7 @@ export default function Results() {
           setLoading(false)
           return
         }
-        const mapped = (data ?? []).map((row) => ({
-          pokemonId: row.pokemon_id,
-          pokemonName: row.pokemon_name,
-          generation: row.generation,
-          count: Number(row.count),
-        }))
+        const mapped = (data ?? []).map(mapLeaderboardRow)
         setLeaderboardCache(mapped)
         setLeaderboard(mapped)
         setLoading(false)

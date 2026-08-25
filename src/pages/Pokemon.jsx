@@ -3,7 +3,7 @@ import { useParams, useLocation, useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { getGeneration } from './Dex'
 import { getFreshLeaderboardCache, setLeaderboardCache, computeRanks, formatRank } from './Results'
-import { capitalize, extractIdFromUrl, formatDexNumber } from '../utils/helpers'
+import { capitalize, extractIdFromUrl, formatDexNumber, mapLeaderboardRow } from '../utils/helpers'
 
 function formatRelativeTime(dateString) {
   const diffMs = Date.now() - new Date(dateString).getTime()
@@ -126,12 +126,7 @@ export default function Pokemon() {
       .rpc('get_leaderboard')
       .then(({ data, error: fetchError }) => {
         if (cancelled || fetchError) return
-        const leaderboard = (data ?? []).map((row) => ({
-          pokemonId: row.pokemon_id,
-          pokemonName: row.pokemon_name,
-          generation: row.generation,
-          count: Number(row.count),
-        }))
+        const leaderboard = (data ?? []).map(mapLeaderboardRow)
         setLeaderboardCache(leaderboard)
         const ranks = computeRanks(leaderboard)
         const index = leaderboard.findIndex((entry) => entry.pokemonId === pokemonId)
