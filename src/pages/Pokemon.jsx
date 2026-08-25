@@ -232,7 +232,7 @@ export default function Pokemon() {
               </div>
             )}
             <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff' }}>
-              {totalVoteCount ?? 0} {(totalVoteCount ?? 0) === 1 ? 'vote' : 'votes'}
+              {totalVoteCount === null ? '—' : `${totalVoteCount} ${totalVoteCount === 1 ? 'vote' : 'votes'}`}
             </div>
           </div>
         </div>
