@@ -93,6 +93,8 @@ Browser → GET supabase/votes (publishable key, RLS read-only)
 - [ ] Manual location input
 - [ ] Custom domain (nuagespc.com)
 
+---
+
 ## Issues
 
 Found a bug or have a suggestion? [Open an issue](https://github.com/nuageuk/FaveDex/issues), all feedback welcome.
