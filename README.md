@@ -38,7 +38,7 @@ Regional variants and alternate forms (Alolan, Galarian, Hisuian, Paldean, Mega,
 
 | Vote | Leaderboard | Profile |
 |:---:|:---:|:---:|
-| ![](screenshot1.png) | ![](screenshot2.png) | ![](screenshot3.png) |
+| ![](screenshots/screenshot1.png) | ![](screenshots/screenshot2.png) | ![](screenshots/screenshot3.png) |
 
 1. Search for a Pokémon by name
 2. Optionally add a username and reason (up to 280 characters)
