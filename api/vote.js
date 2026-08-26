@@ -25,6 +25,14 @@ function stripHtmlTags(value) {
   return value.replace(/<[^>]*>/g, '')
 }
 
+// Matches the SQL side's initcap(): capitalizes the first letter of each
+// letter run and lowercases the rest, leaving separators (spaces, hyphens,
+// parens, apostrophes) untouched. Keeping insert-time casing consistent
+// prevents new rows from re-fragmenting get_leaderboard()'s grouping.
+function toTitleCase(value) {
+  return value.replace(/\p{L}+/gu, (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+}
+
 function sanitizeString(value, maxLength) {
   if (value === null || value === undefined) return null
   if (typeof value !== 'string') return undefined
@@ -99,7 +107,7 @@ export default async function handler(request) {
     },
     body: JSON.stringify({
       pokemon_id: pokemonId,
-      pokemon_name: pokemonName.trim().slice(0, MAX_NAME_LENGTH),
+      pokemon_name: toTitleCase(pokemonName.trim().slice(0, MAX_NAME_LENGTH)),
       generation,
       city: cleanCity,
       country: cleanCountry,
